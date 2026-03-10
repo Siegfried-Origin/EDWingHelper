@@ -1,0 +1,2 @@
+#cmakedefine USE_SDL
+#cmakedefine USE_VULKAN
