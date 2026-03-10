@@ -59,12 +59,23 @@ void GUI::run()
                 ImGui::TableSetupColumn("");
                 ImGui::TableHeadersRow();
 
+                uint32_t uid = 0;
+
                 for (const std::string& cmdr : cmdrTracker[App::NeedsInvite_Online]) {
                     ImGui::TableNextRow();
                     ImGui::TableNextColumn();
                     ImGui::Text(cmdr.c_str());
 
                     ImGui::TableNextColumn();
+
+                    ImGui::PushID(uid++);
+                    if (ImGui::Button("->")) {
+                        _app.setCmdrStatus(cmdr, App::Invited);
+                    }
+                    if (ImGui::IsItemHovered()) {
+                        ImGui::SetTooltip("Manualy move to the invited list");
+                    }
+                    ImGui::PopID();
                 }
 
                 ImGui::EndTable();
@@ -93,16 +104,26 @@ void GUI::run()
             ImGui::Separator();
 
             if (ImGui::BeginTable("In Wing", 2, flags)) {
-                ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch);
                 ImGui::TableSetupColumn("");
+                ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch);
                 ImGui::TableHeadersRow();
+
+                uint32_t uid = 0;
 
                 for (const std::string& cmdr : cmdrTracker[App::Invited]) {
                     ImGui::TableNextRow();
                     ImGui::TableNextColumn();
-                    ImGui::Text(cmdr.c_str());
+                    ImGui::PushID(uid++);
+                    if (ImGui::Button("<-")) {
+                        _app.setCmdrStatus(cmdr, App::NeedsInvite_Online);
+                    }
+                    if (ImGui::IsItemHovered()) {
+                        ImGui::SetTooltip("Manualy remove from the invited list");
+                    }
+                    ImGui::PopID();
 
                     ImGui::TableNextColumn();
+                    ImGui::Text(cmdr.c_str());
                 }
 
                 ImGui::EndTable();

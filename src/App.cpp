@@ -114,6 +114,16 @@ void App::onJournalEvent(const std::string& event, const std::string& journalEnt
 }
 
 
+void App::setCmdrStatus(const std::string& cmdrName, Status status)
+{
+    auto it = _cmdrList.find(cmdrName);
+
+    if (it != _cmdrList.end()) {
+        it->second = status;
+    }
+}
+
+
 void App::handleFriendEvent(const std::string& journalEntry)
 {
     const nlohmann::json json = nlohmann::json::parse(journalEntry);

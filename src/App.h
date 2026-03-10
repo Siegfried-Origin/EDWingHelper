@@ -32,6 +32,8 @@ public:
     const std::map<std::string, Status>& getCmdrList() const { return _cmdrList; }
     const std::map<std::string, bool>& getOnlineFriends() const { return _friendsOnlineTracker; }
 
+    void setCmdrStatus(const std::string& cmdrName, Status status);
+
 private:
     void handleFriendEvent(const std::string& journalEntry);
     void handleWingEvent(const std::string& journalEntry);
