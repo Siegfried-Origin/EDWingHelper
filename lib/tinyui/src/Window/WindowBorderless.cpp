@@ -115,6 +115,38 @@ void WindowBorderless::openVoicePackFileDialog(void* userdata, openedFile callba
 }
 
 
+void WindowBorderless::openCommanderListFileDialog(void* userdata, openedFile callback)
+{
+#ifdef USE_SDL
+    const SDL_DialogFileFilter filters[] = {
+        { "Text file",  "txt" },
+        { "CSV file",   "csv" }
+    };
+
+    // TODO: Ugly but whatever... it is deleted by the callback
+    OpenFileCbData* callbackData = new OpenFileCbData;
+    callbackData->callback = callback;
+    callbackData->userdata = userdata;
+
+    SDL_ShowOpenFileDialog(
+        sdlCallbackOpenFile,
+        callbackData,
+        _sdlWindow,
+        filters, 1,
+        NULL,
+        false);
+#else
+    const std::string newVoicePack = w32OpenFileName(
+        "Select voicepack file",
+        "",
+        "Text files\0*.txt\0CSV files\0*.csv\0",
+        false);
+
+    callback(userdata, newVoicePack);
+#endif
+}
+
+
 // ----------------------------------------------------------------------------
 // Platform specific mess
 // ----------------------------------------------------------------------------

@@ -26,6 +26,7 @@ public:
     bool borderless() const { return _borderless; }
 
     void openVoicePackFileDialog(void* userdata, openedFile callback);
+    void openCommanderListFileDialog(void* userdata, openedFile callback);
 
 protected:
     float _titlebarHeight = 32.f;

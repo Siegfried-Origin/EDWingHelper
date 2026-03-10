@@ -14,9 +14,6 @@ GUI::GUI(
         execPath / "imgui.ini",
         1024, 768
     );
-
-    // TODO: hot load
-    _app.loadCommanderList(execPath / "sample.csv");
 }
 
 
@@ -35,6 +32,10 @@ void GUI::run()
             _mainWindow->beginFrame();
 
             beginMainWindow();
+
+            if (ImGui::Button("Import List...")) {
+                _mainWindow->openCommanderListFileDialog(this, GUI::loadCommanderList);
+            }
 
             // Update status list
             for (std::vector<std::string>& list : cmdrTracker) {
@@ -202,4 +203,22 @@ void GUI::beginMainWindow()
 void GUI::endMainWindow()
 {
     ImGui::End();
+}
+
+
+
+void GUI::loadCommanderList(void* userdata, std::string path)
+{
+    GUI* obj = (GUI*)userdata;
+
+    // TODO: Handle errors and display a message
+    if (!path.empty()) {
+        //try {
+        obj->_app.loadCommanderList(path);
+        //}
+        //catch (const std::runtime_error& e) {
+        //    obj->_logErrStr = e.what();
+        //    obj->_hasError = true;
+        //}
+    }
 }

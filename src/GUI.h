@@ -23,6 +23,8 @@ private:
     void beginMainWindow();
     void endMainWindow();
 
+    static void loadCommanderList(void* userdata, std::string path);
+
 private:
     App _app;
     WindowSystem* _pWindowSystem = nullptr;
