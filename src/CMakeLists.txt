@@ -2,6 +2,8 @@ set(EDWINGHELPER_SOURCES
     main.cpp
     App.cpp
     GUI.cpp
+    util/EliteFileUtil.cpp
+    watchers/JournalWatcher.cpp
     ../assets/edwinghelper.rc
 )
 
