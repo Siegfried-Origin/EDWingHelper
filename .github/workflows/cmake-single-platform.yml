@@ -14,7 +14,7 @@ permissions:
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
-
+  
 jobs:
   build:
     # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
@@ -68,4 +68,4 @@ jobs:
         files: |
           ${{github.workspace}}/build-standard/EDWingHelper-${{ github.event.release.tag_name }}.zip
       env:
-        GITHUB_TOKEN: ${{ secrets.ACTION_UPDATE_RELEASE }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
