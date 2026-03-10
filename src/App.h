@@ -17,7 +17,8 @@ public:
     enum Status {
         NeedsInvite_Online,
         NeedsInvite_Offline,
-        Invited
+        Invited,
+        N_STATUS
     };
 
     App(const std::filesystem::path& execPath);

@@ -192,8 +192,11 @@ void App::handleWingEvent(const std::string& journalEntry)
 
 void App::handleShutdownEvent()
 {
-    _cmdrList.clear();
     _friendsOnlineTracker.clear();
+
+    for (auto& cmdr: _cmdrList) {
+        cmdr.second = NeedsInvite_Offline;
+    }
 }
 
 
@@ -210,8 +213,11 @@ void App::handleFileheaderEvent(const std::string& journalEntry)
     }
 
     if (json["part"] == 1) {
-        _cmdrList.clear();
         _friendsOnlineTracker.clear();
+    }
+
+    for (auto& cmdr : _cmdrList) {
+        cmdr.second = NeedsInvite_Offline;
     }
 }
 
