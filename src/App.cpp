@@ -171,22 +171,30 @@ void App::handleWingEvent(const std::string& journalEntry)
 {
     const nlohmann::json json = nlohmann::json::parse(journalEntry);
 
-    if (!json.contains("event") ||
-        !json.contains("Name")) {
+    if (!json.contains("event")) {
         // Silently ignore when not in debug mode, this shall not happen
         assert(0);
         return;
     }
 
     const std::string& event = json["event"];
-    std::string cmdrName = json["Name"];
-    toCmdrName(cmdrName);
 
-    auto it = _cmdrList.find(cmdrName);
+    if (event == "WingAdd") {
+        if (!json.contains("Name")) {
+            // Silently ignore when not in debug mode, this shall not happen
+            assert(0);
+            return;
+        }
 
-    if (it != _cmdrList.end()) {
-        if (event == "WingAdd") {
-            it->second = Invited;
+        std::string cmdrName = json["Name"];
+        toCmdrName(cmdrName);
+
+        auto it = _cmdrList.find(cmdrName);
+
+        if (it != _cmdrList.end()) {
+            if (event == "WingAdd") {
+                it->second = Invited;
+            }
         }
     }
 
