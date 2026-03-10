@@ -12,8 +12,9 @@
 WindowBorderless::WindowBorderless(
     WindowSystem* sys,
     const std::string& title,
-    const std::filesystem::path& config)
-    : Window(sys, title, config)
+    const std::filesystem::path& config,
+    uint32_t width, uint32_t height)
+    : Window(sys, title, config, width, height)
 {
 #ifdef USE_SDL
     SDL_SetWindowHitTest(_sdlWindow, sdlHitTest, this);

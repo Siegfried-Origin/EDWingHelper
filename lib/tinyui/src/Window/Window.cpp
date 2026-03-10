@@ -23,7 +23,8 @@
 Window::Window(
     WindowSystem* sys,
     const std::string& title,
-    const std::filesystem::path& config)
+    const std::filesystem::path& config,
+    uint32_t width, uint32_t height)
     : _gpuAdapter(sys)
     , _sys(sys)
     , _configPath(config)
@@ -40,7 +41,7 @@ Window::Window(
 
     _sdlWindow = SDL_CreateWindow(
         title.c_str(),
-        640, 700,
+        width, height,
         window_flags
     );
 
@@ -73,7 +74,7 @@ Window::Window(
         _className.c_str(),
         WS_POPUP,
         CW_USEDEFAULT, CW_USEDEFAULT,
-        (int)(_mainScale * 640), (int)(_mainScale * 700),
+        (int)(_mainScale * width), (int)(_mainScale * height),
         nullptr,
         nullptr,
         wcx.hInstance,

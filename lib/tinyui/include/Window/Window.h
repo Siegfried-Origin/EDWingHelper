@@ -29,7 +29,9 @@ protected:
     Window(
         WindowSystem* sys,
         const std::string& title,
-        const std::filesystem::path& config
+        const std::filesystem::path& config,
+        uint32_t width = 640,
+        uint32_t height = 700
     );
 public:
     virtual ~Window();

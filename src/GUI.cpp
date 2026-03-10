@@ -11,7 +11,8 @@ GUI::GUI(
     _mainWindow = new WindowBorderless(
         _pWindowSystem,
         "ED Wing Helper",
-        execPath / "imgui.ini"
+        execPath / "imgui.ini",
+        1024, 768
     );
 
     // TODO: hot load
@@ -48,7 +49,7 @@ void GUI::run()
 
             static ImGuiTableFlags flags = ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_RowBg | ImGuiTableFlags_BordersOuter;
 
-            ImGui::BeginChild("Need Invite", ImVec2(150, 0), ImGuiChildFlags_Borders | ImGuiChildFlags_ResizeX);
+            ImGui::BeginChild("Need Invite", ImVec2(512, 0), ImGuiChildFlags_Borders | ImGuiChildFlags_ResizeX);
             ImGui::Text("Need invite");
             ImGui::Separator();
 
