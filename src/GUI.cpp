@@ -1,5 +1,6 @@
 #include "GUI.h"
 
+#include <array>
 
 GUI::GUI(
     const std::filesystem::path& execPath,
@@ -12,6 +13,9 @@ GUI::GUI(
         "ED Wing Helper",
         execPath / "imgui.ini"
     );
+
+    // TODO: hot load
+    _app.loadCommanderList(execPath / "sample.csv");
 }
 
 
@@ -23,11 +27,86 @@ GUI::~GUI()
 
 void GUI::run()
 {
+    std::array<std::vector<std::string>, App::N_STATUS> cmdrTracker;
+
     while (!_mainWindow->closed()) {
         if (!_mainWindow->minimized()) {
             _mainWindow->beginFrame();
 
             beginMainWindow();
+
+            // Update status list
+            for (std::vector<std::string>& list : cmdrTracker) {
+                list.clear();
+            }
+
+            const std::map<std::string, App::Status>& cmdrList = _app.getCmdrList();
+
+            for (auto const& [cmdr, status] : cmdrList) {
+                cmdrTracker[status].push_back(cmdr);
+            }
+
+            static ImGuiTableFlags flags = ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_RowBg | ImGuiTableFlags_BordersOuter;
+
+            ImGui::BeginChild("Need Invite", ImVec2(150, 0), ImGuiChildFlags_Borders | ImGuiChildFlags_ResizeX);
+            ImGui::Text("Need invite");
+            ImGui::Separator();
+
+            if (ImGui::BeginTable("Online", 2, flags)) {
+                ImGui::TableSetupColumn("Online", ImGuiTableColumnFlags_WidthStretch);
+                ImGui::TableSetupColumn("");
+                ImGui::TableHeadersRow();
+
+                for (const std::string& cmdr : cmdrTracker[App::NeedsInvite_Online]) {
+                    ImGui::TableNextRow();
+                    ImGui::TableNextColumn();
+                    ImGui::Text(cmdr.c_str());
+
+                    ImGui::TableNextColumn();
+                }
+
+                ImGui::EndTable();
+            }
+
+            if (ImGui::BeginTable("Offline", 2, flags)) {
+                ImGui::TableSetupColumn("Offline", ImGuiTableColumnFlags_WidthStretch);
+                ImGui::TableSetupColumn("");
+                ImGui::TableHeadersRow();
+
+                for (const std::string& cmdr : cmdrTracker[App::NeedsInvite_Offline]) {
+                    ImGui::TableNextRow();
+                    ImGui::TableNextColumn();
+                    ImGui::Text(cmdr.c_str());
+
+                    ImGui::TableNextColumn();
+                }
+
+                ImGui::EndTable();
+            }
+
+            ImGui::EndChild();
+            ImGui::SameLine();
+            ImGui::BeginChild("Invited", ImVec2(0, 0), ImGuiChildFlags_Borders);
+            ImGui::Text("Already invited");
+            ImGui::Separator();
+
+            if (ImGui::BeginTable("In Wing", 2, flags)) {
+                ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch);
+                ImGui::TableSetupColumn("");
+                ImGui::TableHeadersRow();
+
+                for (const std::string& cmdr : cmdrTracker[App::Invited]) {
+                    ImGui::TableNextRow();
+                    ImGui::TableNextColumn();
+                    ImGui::Text(cmdr.c_str());
+
+                    ImGui::TableNextColumn();
+                }
+
+                ImGui::EndTable();
+            }
+
+            ImGui::EndChild();
 
             endMainWindow();
 
