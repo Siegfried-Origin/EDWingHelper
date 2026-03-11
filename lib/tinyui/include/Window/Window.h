@@ -39,6 +39,15 @@ public:
     virtual void beginFrame();
     virtual void endFrame();
 
+    void closeWindow();
+    bool closeRequested() { return _closeRequested; }
+    void resetCloseRequested() { _closeRequested = false; }
+    bool isCloseConfirmationRequired() { return !_allowClose; }
+
+    // Allow closing the window without confirmation
+    // if a close request is pending, close the window
+    void allowClose(bool allowClose);
+
     bool closed() const { return _closed; }
     bool minimized() const { return _minimized; }
     float mainScale() const { return _mainScale; }
@@ -79,8 +88,12 @@ protected:
     float _mainScale = 1.f;
     std::string _title;
 
+    // Allow for confirmation before closing the window
+    bool _allowClose = true;
+    bool _closeRequested = false;
+
 #ifdef USE_SDL
-    virtual void sdlWndProc(SDL_Event& event) = 0;
+    virtual void sdlWndProc(SDL_Event& event);
     SDL_Window* _sdlWindow;
 #else
     static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);

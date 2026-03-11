@@ -240,6 +240,30 @@ void Window::endFrame()
 }
 
 
+void Window::closeWindow()
+{
+#ifdef USE_SDL
+    SDL_Event event;
+    SDL_zero(event);
+    event.type = SDL_EVENT_WINDOW_CLOSE_REQUESTED;
+    event.window.windowID = SDL_GetWindowID(_sdlWindow);
+    SDL_PushEvent(&event);
+#else
+    PostMessage(_hwnd, WM_CLOSE, 0, 0);
+#endif
+}
+
+
+void Window::allowClose(bool allowClose)
+{
+    _allowClose = allowClose;
+
+    if (_closeRequested) {
+        closeWindow();
+    }
+}
+
+
 const char* Window::title() const
 {
     return _title.c_str();
@@ -331,7 +355,44 @@ void Window::refreshResize()
 }
 
 
-#ifndef USE_SDL
+#ifdef USE_SDL
+
+void Window::sdlWndProc(SDL_Event& event)
+{
+    ImGui_ImplSDL3_ProcessEvent(&event);
+
+    switch (event.type) {
+    case SDL_EVENT_QUIT:
+    case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
+        _closeRequested = true;
+
+        if (event.window.windowID == SDL_GetWindowID(_sdlWindow) && _allowClose) {
+            _closed = true;
+        }
+        break;
+
+    case SDL_EVENT_WINDOW_RESIZED:
+    {
+        int width, height;
+        SDL_GetWindowSizeInPixels(_sdlWindow, &width, &height);
+        onResize(width, height);
+    }
+    break;
+
+    case SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED:
+    {
+        _mainScale = SDL_GetWindowDisplayScale(_sdlWindow);
+        int width, height;
+        SDL_GetWindowSizeInPixels(_sdlWindow, &width, &height);
+        onResize(width, height);
+    }
+    break;
+    default:
+        break;
+    }
+}
+
+#else
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -372,8 +433,12 @@ LRESULT CALLBACK Window::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPar
             }
 
             case WM_CLOSE: {
-                ::DestroyWindow(hWnd);
-                pWindow->_closed = true;
+                pWindow->_closeRequested = true;
+
+                if (pWindow->_allowClose) {
+                    ::DestroyWindow(hWnd);
+                    pWindow->_closed = true;
+                }
                 return 0;
             }
 

@@ -70,25 +70,11 @@ void WindowBorderless::maximizeRestoreWindow()
 }
 
 
-void WindowBorderless::closeWindow()
-{
-#ifdef USE_SDL
-    SDL_Event event;
-    SDL_zero(event);
-    event.type = SDL_EVENT_QUIT;
-    event.window.windowID = SDL_GetWindowID(_sdlWindow);
-    SDL_PushEvent(&event);
-#else
-    PostMessage(_hwnd, WM_CLOSE, 0, 0);
-#endif
-}
-
-
 void WindowBorderless::openVoicePackFileDialog(void* userdata, openedFile callback)
 {
 #ifdef USE_SDL
     const SDL_DialogFileFilter filters[] = {
-    { "JSON file",  "json" }
+        { "JSON file",  "json" }
     };
 
     // TODO: Ugly but whatever... it is deleted by the callback
@@ -153,43 +139,6 @@ void WindowBorderless::openCommanderListFileDialog(void* userdata, openedFile ca
 
 
 #ifdef USE_SDL
-
-void WindowBorderless::sdlWndProc(SDL_Event& event)
-{
-    ImGui_ImplSDL3_ProcessEvent(&event);
-
-    switch (event.type) {
-        case SDL_EVENT_QUIT:
-            _closed = true;
-            break;
-
-        case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
-            if (event.window.windowID == SDL_GetWindowID(_sdlWindow)) {
-                _closed = true;
-            }
-            break;
-
-        case SDL_EVENT_WINDOW_RESIZED:
-        {
-            int width, height;
-            SDL_GetWindowSizeInPixels(_sdlWindow, &width, &height);
-            onResize(width, height);
-        }
-        break;
-
-        case SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED:
-        {
-            _mainScale = SDL_GetWindowDisplayScale(_sdlWindow);
-            int width, height;
-            SDL_GetWindowSizeInPixels(_sdlWindow, &width, &height);
-            onResize(width, height);
-        }
-        break;
-        default:
-            break;
-    }
-}
-
 
 SDL_HitTestResult SDLCALL WindowBorderless::sdlHitTest(SDL_Window* win, const SDL_Point* area, void* data)
 {
@@ -315,7 +264,7 @@ LRESULT WindowBorderless::w32WndProc(UINT msg, WPARAM wParam, LPARAM lParam)
         }
     }
 
-    return ::DefWindowProcW(_hwnd, msg, wParam, lParam);
+    return Window::w32WndProc(msg, wParam, lParam);
 }
 
 

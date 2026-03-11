@@ -19,7 +19,6 @@ public:
 
     void minimizeWindow();
     void maximizeRestoreWindow();
-    void closeWindow();
 
     float titleBarHeight() const { return _titlebarHeight; }
     float windowButtonWidth() const { return _buttonWidth; }
@@ -35,8 +34,6 @@ protected:
     bool _borderless = true;
 
 #ifdef USE_SDL
-    virtual void sdlWndProc(SDL_Event& event);
-
     static SDL_HitTestResult SDLCALL sdlHitTest(SDL_Window* win, const SDL_Point* area, void* data);
 
     struct OpenFileCbData {
