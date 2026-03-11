@@ -39,15 +39,9 @@ The following improvements are planned:
 
 ### List management
 - Drag & drop a file to **replace or append** the commander list
-- Manually **add commanders from the UI**
-- **Export the commander list** to a text file
 - Monitor the list file and **auto-reload when modified**
 
 ### Monitoring improvements
-- Display **counters**:
-  - total commanders
-  - remaining to invite
-  - currently in wing
 - Detect commanders **already present in the instance** via local chat monitoring
 
 ### Wing management
