@@ -1,5 +1,5 @@
-#include "Swapchain.h"
-#include "VkUtil.h"
+#include <Vulkan/VkUtil.h>
+#include <Vulkan/Swapchain.h>
 
 #include <stdexcept>
 
@@ -206,7 +206,7 @@ VkResult Swapchain::acquireNextImage(
     VkSemaphore* semaphoreImageAcquired,
     VkSemaphore* semaphoreRenderReady)
 {
-    if (!_valid) { 
+    if (!_valid) {
         return VK_ERROR_OUT_OF_DATE_KHR;
     }
 

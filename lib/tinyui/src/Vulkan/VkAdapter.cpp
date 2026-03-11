@@ -1,14 +1,15 @@
-#include "VkAdapter.h"
+#include <Vulkan/VkAdapter.h>
+#include <Vulkan/VkUtil.h>
+
+#include <Window/WindowSystem.h>
+#include <Window/Window.h>
+
 #include <iostream>
 #include <stdexcept>
 #include <cassert>
 #include <string>
 
 #include <config.h>
-#include "VkUtil.h"
-
-#include "../Window/WindowSystem.h"
-#include "../Window/Window.h"
 
 
 VkAdapter::VkAdapter(
@@ -44,7 +45,7 @@ VkAdapter::VkAdapter(
 
     std::vector<const char*> extensions(instanceExtensions);
     std::vector<const char*> platformExtensions;
-    
+
     windowSystem->getVkInstanceExtensions(platformExtensions);
 
     for (const char*& ext : platformExtensions) {

@@ -8,7 +8,11 @@
 #include <string>
 
 #ifdef _WIN32
-#include <windows.h>
+#  include <windows.h>
+#else
+#  include <sys/inotify.h>
+#  include <unistd.h>
+#  include <limits.h>
 #endif
 
 
@@ -36,7 +40,7 @@ public:
     void onJournalEvent(const std::string& event, const std::string& journalEntry);
 
     const std::map<std::string, Status>& getCmdrList() const { return _cmdrList; }
-    
+
     const std::vector<std::string>& getCmdrNeedInviteOnline() const { return _cmdrListFiltered[NeedsInvite_Online]; }
     const std::vector<std::string>& getCmdrNeedInviteOffline() const { return _cmdrListFiltered[NeedsInvite_Offline]; }
     const std::vector<std::string>& getCmdrInvited() const { return _cmdrListFiltered[Invited]; }

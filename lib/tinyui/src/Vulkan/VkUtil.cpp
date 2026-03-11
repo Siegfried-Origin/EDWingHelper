@@ -1,4 +1,4 @@
-#include "VkUtil.h"
+#include <Vulkan/VkUtil.h>
 
 
 uint32_t VkUtil::findMemoryTypeIdx(

@@ -336,13 +336,15 @@ void Window::refreshResize()
         _gpuAdapter.nImageCount(),          // MinImageCount
         _gpuAdapter.nImageCount(),          // ImageCount
         VK_NULL_HANDLE,                     // PipelineCache (optional)
-        _gpuAdapter.getRenderPass(),        // RenderPass
-        0,                                  // Subpass
-        VK_SAMPLE_COUNT_1_BIT,              // msaaSamples
-        false,                              // UseDynamicRendering
+        {
+            _gpuAdapter.getRenderPass(),        // RenderPass
+            0,                                  // Subpass
+            VK_SAMPLE_COUNT_1_BIT,              // msaaSamples
     #ifdef IMGUI_IMPL_VULKAN_HAS_DYNAMIC_RENDERING
-        {},                                 // PipelineRenderingCreateInfo (optional)
+            {},                                 // PipelineRenderingCreateInfo (optional)
     #endif
+        },
+        false,                              // UseDynamicRendering
         nullptr,                            // VkAllocationCallbacks
         nullptr,                            // (*CheckVkResultFn)(VkResult err)
         1024 * 1024                         // MinAllocationSize

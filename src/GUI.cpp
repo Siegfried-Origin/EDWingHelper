@@ -5,6 +5,9 @@
 #include "fonts/icons.h"
 #include "fonts/IconsMaterialDesign.h"
 
+#include <algorithm>
+#include <cstring>
+
 
 GUI::GUI(
     const std::filesystem::path& execPath,
@@ -26,7 +29,6 @@ GUI::GUI(
     float iconFontSize = 0.8 * fontSize;//style.FontScaleDpi * 24.f;
 
     // Add icon glyphs
-    static const ImWchar icons_ranges[] = { ICON_MIN_MD, ICON_MAX_MD, 0 };
     ImFontConfig cfgIcons;
     cfgIcons.MergeMode = true;
     cfgIcons.PixelSnapH = true;
@@ -53,8 +55,7 @@ GUI::GUI(
         Icons_compressed_data,
         Icons_compressed_size,
         iconFontSize,
-        &cfgIcons,
-        icons_ranges
+        &cfgIcons
     );
 
     // Eurostile
@@ -68,8 +69,7 @@ GUI::GUI(
         Icons_compressed_data,
         Icons_compressed_size,
         iconFontSize,
-        &cfgIcons,
-        icons_ranges
+        &cfgIcons
     );
 }
 
@@ -331,7 +331,7 @@ void GUI::showCommanderLists()
                 if (ImGui::Button(ICON_MD_DELETE)) {
                     _app.removeCommander(cmdr);
                 }
-                
+
                 if (ImGui::IsItemHovered()) {
                     ImGui::PopFont();
                     ImGui::SetTooltip("Remove from list");
