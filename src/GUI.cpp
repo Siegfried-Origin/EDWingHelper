@@ -288,12 +288,18 @@ void GUI::showCommanderLists()
 {
     static ImGuiTableFlags flags = ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_RowBg | ImGuiTableFlags_BordersOuter;
 
+    const ImU32 rowOnline = ImGui::GetColorU32(ImVec4(0.0f, 0.2f, 0.0f, 0.65f));
+    const ImU32 rowOffline = ImGui::GetColorU32(ImVec4(0.2f, 0.0f, 0.0f, 0.65f));
+    const ImU32 rowInvited = ImGui::GetColorU32(ImVec4(0.0f, 0.1f, 0.2f, 0.65f));
+
     // ------------------------------------------------------------------------
     // Need invite
     // ------------------------------------------------------------------------
 
+    const size_t totalNeedInvite = _app.getCmdrNeedInviteOnline().size() + _app.getCmdrNeedInviteOffline().size();
+
     ImGui::BeginChild("Need Invite", ImVec2(512, 0), ImGuiChildFlags_Borders | ImGuiChildFlags_ResizeX);
-    ImGui::Text("Need invite");
+    ImGui::Text("Need invite (%d)", totalNeedInvite);
     ImGui::Separator();
 
     // Online
@@ -310,6 +316,8 @@ void GUI::showCommanderLists()
 
         for (const std::string& cmdr : cmdrNeedsInviteOnline) {
             ImGui::TableNextRow();
+            ImGui::TableSetBgColor(ImGuiTableBgTarget_RowBg1, rowOnline);
+
             ImGui::TableNextColumn();
             ImGui::Text(cmdr.c_str());
 
@@ -346,6 +354,8 @@ void GUI::showCommanderLists()
 
         for (const std::string& cmdr : cmdrNeedsInviteOffline) {
             ImGui::TableNextRow();
+            ImGui::TableSetBgColor(ImGuiTableBgTarget_RowBg1, rowOffline);
+
             ImGui::TableNextColumn();
             ImGui::Text(cmdr.c_str());
 
@@ -363,9 +373,11 @@ void GUI::showCommanderLists()
     // Already invited
     // ------------------------------------------------------------------------
 
+    const size_t totalInvited = _app.getCmdrInvited().size();
+
     ImGui::SameLine();
     ImGui::BeginChild("Invited", ImVec2(0, 0), ImGuiChildFlags_Borders);
-    ImGui::Text("Already invited");
+    ImGui::Text("Already invited (%d)", totalInvited);
     ImGui::Separator();
 
     if (ImGui::BeginTable("In Wing", 2, flags)) {
@@ -380,6 +392,8 @@ void GUI::showCommanderLists()
 
         for (const std::string& cmdr : cmdrInvited) {
             ImGui::TableNextRow();
+            ImGui::TableSetBgColor(ImGuiTableBgTarget_RowBg1, rowInvited);
+
             ImGui::TableNextColumn();
             ImGui::PushID(uid++);
             
