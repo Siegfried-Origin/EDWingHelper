@@ -43,7 +43,8 @@ public:
 
     const std::map<std::string, bool>& getOnlineFriends() const { return _friendsOnlineTracker; }
 
-    void setCmdrStatus(const std::string& cmdrName, Status status);
+    void setCmdrStatusInvited(const std::string& cmdrName);
+    void setCmdrStatusWaiting(const std::string& cmdrName);
 
 private:
     void handleFriendEvent(const std::string& journalEntry);

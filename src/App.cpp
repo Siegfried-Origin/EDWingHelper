@@ -152,11 +152,32 @@ void App::onJournalEvent(const std::string& event, const std::string& journalEnt
 }
 
 
-void App::setCmdrStatus(const std::string& cmdrName, Status status)
+void App::setCmdrStatusInvited(const std::string& cmdrName)
 {
     auto it = _cmdrList.find(cmdrName);
 
     if (it != _cmdrList.end()) {
+        it->second = Invited;
+    }
+
+    refreshSortedLists();
+}
+
+
+void App::setCmdrStatusWaiting(const std::string& cmdrName)
+{
+    auto it = _cmdrList.find(cmdrName);
+
+    if (it != _cmdrList.end()) {
+        Status status = NeedsInvite_Offline;
+
+        auto itFriendList = _friendsOnlineTracker.find(cmdrName);
+
+        if (itFriendList != _friendsOnlineTracker.end() &&
+            _friendsOnlineTracker[cmdrName]) {
+            status = NeedsInvite_Online;
+        }
+
         it->second = status;
     }
 

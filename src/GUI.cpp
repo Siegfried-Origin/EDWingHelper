@@ -324,17 +324,9 @@ void GUI::showCommanderLists()
             if (_showEditButtons) {
                 ImGui::PushID(uid++);
 
-                if (ImGui::Button(ICON_MD_ARROW_FORWARD)) {
-                    _app.setCmdrStatus(cmdr, App::Invited);
-                }
-
-                if (ImGui::IsItemHovered()) {
-                    ImGui::PopFont();
-                    ImGui::SetTooltip("Manualy move to the invited list");
-                    ImGui::PushFont(_fontEurocaps);
-                }
-
-                ImGui::SameLine();
+                ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(255, 0, 0, 125));
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(255, 50, 50, 200));
+                ImGui::PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(255, 0, 0, 255));
 
                 if (ImGui::Button(ICON_MD_DELETE)) {
                     _app.removeCommander(cmdr);
@@ -343,6 +335,20 @@ void GUI::showCommanderLists()
                 if (ImGui::IsItemHovered()) {
                     ImGui::PopFont();
                     ImGui::SetTooltip("Remove from list");
+                    ImGui::PushFont(_fontEurocaps);
+                }
+
+                ImGui::PopStyleColor(3);
+
+                ImGui::SameLine();
+
+                if (ImGui::Button(ICON_MD_ARROW_FORWARD)) {
+                    _app.setCmdrStatusInvited(cmdr);
+                }
+
+                if (ImGui::IsItemHovered()) {
+                    ImGui::PopFont();
+                    ImGui::SetTooltip("Manualy move to the invited list");
                     ImGui::PushFont(_fontEurocaps);
                 }
 
@@ -380,13 +386,31 @@ void GUI::showCommanderLists()
             if (_showEditButtons) {
                 ImGui::PushID(uid++);
 
+                ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(255, 0, 0, 125));
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(255, 50, 50, 200));
+                ImGui::PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(255, 0, 0, 255));
+
                 if (ImGui::Button(ICON_MD_DELETE)) {
                     _app.removeCommander(cmdr);
                 }
 
+                ImGui::PopStyleColor(3);
+
                 if (ImGui::IsItemHovered()) {
                     ImGui::PopFont();
                     ImGui::SetTooltip("Remove from list");
+                    ImGui::PushFont(_fontEurocaps);
+                }
+
+                ImGui::SameLine();
+
+                if (ImGui::Button(ICON_MD_ARROW_FORWARD)) {
+                    _app.setCmdrStatusInvited(cmdr);
+                }
+
+                if (ImGui::IsItemHovered()) {
+                    ImGui::PopFont();
+                    ImGui::SetTooltip("Manualy move to the invited list");
                     ImGui::PushFont(_fontEurocaps);
                 }
 
@@ -432,7 +456,7 @@ void GUI::showCommanderLists()
                 ImGui::PushID(uid++);
 
                 if (ImGui::Button(ICON_MD_ARROW_BACK)) {
-                    _app.setCmdrStatus(cmdr, App::NeedsInvite_Online);
+                    _app.setCmdrStatusWaiting(cmdr);
                 }
 
                 if (ImGui::IsItemHovered()) {
@@ -443,6 +467,10 @@ void GUI::showCommanderLists()
 
                 ImGui::SameLine();
 
+                ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(255, 0, 0, 125));
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(255, 50, 50, 200));
+                ImGui::PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(255, 0, 0, 255));
+
                 if (ImGui::Button(ICON_MD_DELETE)) {
                     _app.removeCommander(cmdr);
                 }
@@ -452,6 +480,8 @@ void GUI::showCommanderLists()
                     ImGui::SetTooltip("Remove from list");
                     ImGui::PushFont(_fontEurocaps);
                 }
+
+                ImGui::PopStyleColor(3);
 
                 ImGui::PopID();
             }
