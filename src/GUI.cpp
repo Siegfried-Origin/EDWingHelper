@@ -83,7 +83,6 @@ GUI::~GUI()
 void GUI::run()
 {
     while (!_mainWindow->closed()) {
-
         // Force confirmation in case commander were winged:
         // we cannot recover this list after closing
         // Do not update this field when a close is requested, otherwise
@@ -120,50 +119,7 @@ void GUI::run()
                 showCommanderLists();
             }
 
-            // Close confirmation if needed
-            if (_mainWindow->closeRequested() && _mainWindow->isCloseConfirmationRequired()) {
-                ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-                ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-                ImGui::OpenPopup("Confirm Exit");
-
-                if (ImGui::BeginPopupModal("Confirm Exit", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-                    ImGui::Text(
-                        "You currently have invited commanders.\n"
-                        "Closing the application will cause you to lose the current winging progress.\n"
-                        "This action cannot be undone.\n"
-                        "\n"
-                        "Are you sure you want to exit the program ?\n"
-                    );
-
-                    float buttonWidth = 134.0f;
-                    float spacing = ImGui::GetStyle().ItemSpacing.x;
-                    float totalWidth = buttonWidth * 2 + spacing;
-
-                    float avail = ImGui::GetContentRegionAvail().x;
-                    ImGui::SetCursorPosX((avail - totalWidth) * 0.5f);
-
-                    if (ImGui::Button("Cancel", ImVec2(buttonWidth, 0))) {
-                        _mainWindow->resetCloseRequested();
-                        ImGui::CloseCurrentPopup();
-                    }
-                    ImGui::SetItemDefaultFocus();
-
-                    ImGui::SameLine();
-
-                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.1f, 0.1f, 1.0f));
-                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.9f, 0.2f, 0.2f, 1.0f));
-                    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.7f, 0.0f, 0.0f, 1.0f));
-
-                    if (ImGui::Button("Confirm Exit", ImVec2(buttonWidth, 0))) {
-                        _mainWindow->allowClose(true);
-                        ImGui::CloseCurrentPopup();
-                    }
-
-                    ImGui::PopStyleColor(3);
-
-                    ImGui::EndPopup();
-                }
-            }
+            showConfirmationMessages();
 
             ImGui::PopFont();
 
@@ -274,6 +230,12 @@ void GUI::menuBar()
 
             if (ImGui::MenuItem("Append commander list...")) {
                 _mainWindow->openCommanderListFileDialog(this, GUI::appendCommanderList);
+            }
+
+            ImGui::Separator();
+
+            if (ImGui::MenuItem("Export commander list...", NULL, false, _app.getCmdrList().size() > 0)) {
+                _mainWindow->saveCommanderListFileDialog(this, GUI::exportCommanderList);
             }
 
             ImGui::EndMenu();
@@ -423,6 +385,56 @@ void GUI::showCommanderLists()
 }
 
 
+void GUI::showConfirmationMessages()
+{
+    // Close confirmation if needed
+    if (_mainWindow->closeRequested() && _mainWindow->isCloseConfirmationRequired()) {
+        ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+        ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+        ImGui::OpenPopup("Confirm Exit");
+
+        if (ImGui::BeginPopupModal("Confirm Exit", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+            ImGui::Text(
+                "You currently have invited commanders.\n"
+                "Closing the application will cause you to lose the current winging progress.\n"
+                "This action cannot be undone.\n"
+                "\n"
+                "Are you sure you want to exit the program ?\n"
+            );
+
+            float buttonWidth = 134.0f;
+            float spacing = ImGui::GetStyle().ItemSpacing.x;
+            float totalWidth = buttonWidth * 2 + spacing;
+
+            float avail = ImGui::GetContentRegionAvail().x;
+            ImGui::SetCursorPosX((avail - totalWidth) * 0.5f);
+
+            if (ImGui::Button("Cancel", ImVec2(buttonWidth, 0))) {
+                _mainWindow->resetCloseRequested();
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::SetItemDefaultFocus();
+
+            ImGui::SameLine();
+
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.1f, 0.1f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.9f, 0.2f, 0.2f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.7f, 0.0f, 0.0f, 1.0f));
+
+            if (ImGui::Button("Confirm Exit", ImVec2(buttonWidth, 0))) {
+                _mainWindow->allowClose(true);
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::PopStyleColor(3);
+
+            ImGui::EndPopup();
+        }
+    }
+}
+
+
+
 void GUI::loadCommanderList(void* userdata, std::string path)
 {
     GUI* obj = (GUI*)userdata;
@@ -453,5 +465,27 @@ void GUI::appendCommanderList(void* userdata, std::string path)
         //    obj->_logErrStr = e.what();
         //    obj->_hasError = true;
         //}
+    }
+}
+
+
+void GUI::exportCommanderList(void* userdata, std::string path)
+{
+    GUI* obj = (GUI*)userdata;
+
+    if (!path.empty()) {
+        std::filesystem::path fsPath(path);
+
+        // Normalize extension to lowercase and check for ".txt"
+        std::string ext = fsPath.extension().string();
+        std::transform(ext.begin(), ext.end(), ext.begin(), [](unsigned char c) { return std::tolower(c); });
+
+        if (ext != ".txt") {
+            // Append ".txt" if the path does not already end with ".txt"
+            path += ".txt";
+            fsPath = std::filesystem::path(path);
+        }
+
+        obj->_app.exportCommanderList(fsPath);
     }
 }

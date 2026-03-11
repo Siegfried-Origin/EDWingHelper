@@ -26,16 +26,17 @@ private:
     void menuBar();
 
     void showCommanderLists();
+    void showConfirmationMessages();
 
     static void loadCommanderList(void* userdata, std::string path);
     static void appendCommanderList(void* userdata, std::string path);
+    static void exportCommanderList(void* userdata, std::string path);
 
 private:
     App _app;
     WindowSystem* _pWindowSystem = nullptr;
     WindowBorderless* _mainWindow = nullptr;
 
-    //ImFont* fontIcons = nullptr;
     ImFont* fontEurocaps = nullptr;
     ImFont* fontEurostile = nullptr;
 };

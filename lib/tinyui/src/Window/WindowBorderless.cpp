@@ -133,6 +133,37 @@ void WindowBorderless::openCommanderListFileDialog(void* userdata, openedFile ca
 }
 
 
+void WindowBorderless::saveCommanderListFileDialog(void* userdata, openedFile callback)
+{
+
+#ifdef USE_SDL
+    const SDL_DialogFileFilter filters[] = {
+        { "Text file",  "txt" }
+    };
+
+    // TODO: Ugly but whatever... it is deleted by the callback
+    OpenFileCbData* callbackData = new OpenFileCbData;
+    callbackData->callback = callback;
+    callbackData->userdata = userdata;
+
+    SDL_ShowSaveFileDialog(
+        sdlCallbackOpenFile,
+        callbackData,
+        _sdlWindow,
+        filters, 1,
+        NULL);
+#else
+    const std::string newVoicePack = w32SaveFileName(
+        "Save commander list",
+        "",
+        "Text files\0*.txt\0",
+        false);
+
+    callback(userdata, newVoicePack);
+#endif
+}
+
+
 // ----------------------------------------------------------------------------
 // Platform specific mess
 // ----------------------------------------------------------------------------
@@ -418,6 +449,32 @@ std::string WindowBorderless::w32OpenFileName(const char* title, const char* ini
     }
 
     if (GetOpenFileNameA(&ofn)) {
+        return std::string(fileBuffer);
+    }
+    return {};
+}
+
+
+std::string WindowBorderless::w32SaveFileName(const char* title, const char* initialDir, const char* filter, bool multiSelect)
+{
+    OPENFILENAMEA ofn = { 0 };
+    char fileBuffer[MAX_PATH * 4] = { 0 };
+
+    ofn.lStructSize = sizeof(ofn);
+    ofn.hwndOwner = _hwnd;
+    ofn.lpstrTitle = title;
+    ofn.lpstrInitialDir = initialDir;
+    ofn.lpstrFilter = filter;
+    ofn.nFilterIndex = 1;
+    ofn.lpstrFile = fileBuffer;
+    ofn.nMaxFile = sizeof(fileBuffer);
+    ofn.Flags = OFN_PATHMUSTEXIST | OFN_OVERWRITEPROMPT;
+
+    if (multiSelect) {
+        ofn.Flags |= OFN_ALLOWMULTISELECT;
+    }
+
+    if (GetSaveFileNameA(&ofn)) {
         return std::string(fileBuffer);
     }
     return {};

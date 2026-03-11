@@ -28,6 +28,7 @@ public:
 
     void loadCommanderList(const std::filesystem::path& pathList);
     void appendCommanderList(const std::filesystem::path& pathList);
+    void exportCommanderList(const std::filesystem::path& path);
 
     void onJournalEvent(const std::string& event, const std::string& journalEntry);
 

@@ -107,6 +107,17 @@ void App::appendCommanderList(const std::filesystem::path& pathList)
 }
 
 
+void App::exportCommanderList(const std::filesystem::path& path)
+{
+    std::ofstream out(path);
+
+    for (const auto& it : _cmdrList) {
+        out << it.first;
+        out << std::endl;
+    }
+}
+
+
 void App::onJournalEvent(const std::string& event, const std::string& journalEntry)
 {
     if (event == "Friends") {
