@@ -25,8 +25,6 @@ GUI::~GUI()
 
 void GUI::run()
 {
-    std::array<std::vector<std::string>, App::N_STATUS> cmdrTracker;
-
     while (!_mainWindow->closed()) {
         if (!_mainWindow->minimized()) {
             _mainWindow->beginFrame();
@@ -37,99 +35,7 @@ void GUI::run()
                 _mainWindow->openCommanderListFileDialog(this, GUI::loadCommanderList);
             }
 
-            // Update status list
-            for (std::vector<std::string>& list : cmdrTracker) {
-                list.clear();
-            }
-
-            const std::map<std::string, App::Status>& cmdrList = _app.getCmdrList();
-
-            for (auto const& [cmdr, status] : cmdrList) {
-                cmdrTracker[status].push_back(cmdr);
-            }
-
-            static ImGuiTableFlags flags = ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_RowBg | ImGuiTableFlags_BordersOuter;
-
-            ImGui::BeginChild("Need Invite", ImVec2(512, 0), ImGuiChildFlags_Borders | ImGuiChildFlags_ResizeX);
-            ImGui::Text("Need invite");
-            ImGui::Separator();
-
-            if (ImGui::BeginTable("Online", 2, flags)) {
-                ImGui::TableSetupColumn("Online", ImGuiTableColumnFlags_WidthStretch);
-                ImGui::TableSetupColumn("");
-                ImGui::TableHeadersRow();
-
-                uint32_t uid = 0;
-
-                for (const std::string& cmdr : cmdrTracker[App::NeedsInvite_Online]) {
-                    ImGui::TableNextRow();
-                    ImGui::TableNextColumn();
-                    ImGui::Text(cmdr.c_str());
-
-                    ImGui::TableNextColumn();
-
-                    ImGui::PushID(uid++);
-                    if (ImGui::Button("->")) {
-                        _app.setCmdrStatus(cmdr, App::Invited);
-                    }
-                    if (ImGui::IsItemHovered()) {
-                        ImGui::SetTooltip("Manualy move to the invited list");
-                    }
-                    ImGui::PopID();
-                }
-
-                ImGui::EndTable();
-            }
-
-            if (ImGui::BeginTable("Offline", 2, flags)) {
-                ImGui::TableSetupColumn("Offline", ImGuiTableColumnFlags_WidthStretch);
-                ImGui::TableSetupColumn("");
-                ImGui::TableHeadersRow();
-
-                for (const std::string& cmdr : cmdrTracker[App::NeedsInvite_Offline]) {
-                    ImGui::TableNextRow();
-                    ImGui::TableNextColumn();
-                    ImGui::Text(cmdr.c_str());
-
-                    ImGui::TableNextColumn();
-                }
-
-                ImGui::EndTable();
-            }
-
-            ImGui::EndChild();
-            ImGui::SameLine();
-            ImGui::BeginChild("Invited", ImVec2(0, 0), ImGuiChildFlags_Borders);
-            ImGui::Text("Already invited");
-            ImGui::Separator();
-
-            if (ImGui::BeginTable("In Wing", 2, flags)) {
-                ImGui::TableSetupColumn("");
-                ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch);
-                ImGui::TableHeadersRow();
-
-                uint32_t uid = 0;
-
-                for (const std::string& cmdr : cmdrTracker[App::Invited]) {
-                    ImGui::TableNextRow();
-                    ImGui::TableNextColumn();
-                    ImGui::PushID(uid++);
-                    if (ImGui::Button("<-")) {
-                        _app.setCmdrStatus(cmdr, App::NeedsInvite_Online);
-                    }
-                    if (ImGui::IsItemHovered()) {
-                        ImGui::SetTooltip("Manualy remove from the invited list");
-                    }
-                    ImGui::PopID();
-
-                    ImGui::TableNextColumn();
-                    ImGui::Text(cmdr.c_str());
-                }
-
-                ImGui::EndTable();
-            }
-
-            ImGui::EndChild();
+            showCommanderLists();
 
             endMainWindow();
 
@@ -224,6 +130,109 @@ void GUI::beginMainWindow()
 void GUI::endMainWindow()
 {
     ImGui::End();
+}
+
+
+void GUI::showCommanderLists()
+{
+    static ImGuiTableFlags flags = ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_RowBg | ImGuiTableFlags_BordersOuter;
+
+    // ------------------------------------------------------------------------
+    // Need invite
+    // ------------------------------------------------------------------------
+
+    ImGui::BeginChild("Need Invite", ImVec2(512, 0), ImGuiChildFlags_Borders | ImGuiChildFlags_ResizeX);
+    ImGui::Text("Need invite");
+    ImGui::Separator();
+
+    // Online
+    if (ImGui::BeginTable("Online", 2, flags)) {
+        ImGui::TableSetupColumn("Online", ImGuiTableColumnFlags_WidthStretch);
+        ImGui::TableSetupColumn("");
+        ImGui::TableHeadersRow();
+
+        uint32_t uid = 0;
+
+        const std::vector<std::string>& cmdrNeedsInviteOnline = _app.getCmdrNeedInviteOnline();
+
+        for (const std::string& cmdr : cmdrNeedsInviteOnline) {
+            ImGui::TableNextRow();
+            ImGui::TableNextColumn();
+            ImGui::Text(cmdr.c_str());
+
+            ImGui::TableNextColumn();
+
+            ImGui::PushID(uid++);
+            if (ImGui::Button("->")) {
+                _app.setCmdrStatus(cmdr, App::Invited);
+            }
+            if (ImGui::IsItemHovered()) {
+                ImGui::SetTooltip("Manualy move to the invited list");
+            }
+            ImGui::PopID();
+        }
+
+        ImGui::EndTable();
+    }
+
+    // Offline
+    if (ImGui::BeginTable("Offline", 2, flags)) {
+        ImGui::TableSetupColumn("Offline", ImGuiTableColumnFlags_WidthStretch);
+        ImGui::TableSetupColumn("");
+        ImGui::TableHeadersRow();
+
+        const std::vector<std::string>& cmdrNeedsInviteOffline = _app.getCmdrNeedInviteOffline();
+
+        for (const std::string& cmdr : cmdrNeedsInviteOffline) {
+            ImGui::TableNextRow();
+            ImGui::TableNextColumn();
+            ImGui::Text(cmdr.c_str());
+
+            ImGui::TableNextColumn();
+        }
+
+        ImGui::EndTable();
+    }
+
+    ImGui::EndChild();
+
+    // ------------------------------------------------------------------------
+    // Already invited
+    // ------------------------------------------------------------------------
+
+    ImGui::SameLine();
+    ImGui::BeginChild("Invited", ImVec2(0, 0), ImGuiChildFlags_Borders);
+    ImGui::Text("Already invited");
+    ImGui::Separator();
+
+    if (ImGui::BeginTable("In Wing", 2, flags)) {
+        ImGui::TableSetupColumn("");
+        ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch);
+        ImGui::TableHeadersRow();
+
+        uint32_t uid = 0;
+        const std::vector<std::string>& cmdrInvited = _app.getCmdrInvited();
+
+        for (const std::string& cmdr : cmdrInvited) {
+            ImGui::TableNextRow();
+            ImGui::TableNextColumn();
+            ImGui::PushID(uid++);
+            if (ImGui::Button("<-")) {
+                _app.setCmdrStatus(cmdr, App::NeedsInvite_Online);
+            }
+            if (ImGui::IsItemHovered()) {
+                ImGui::SetTooltip("Manualy remove from the invited list");
+            }
+            ImGui::PopID();
+
+            ImGui::TableNextColumn();
+            ImGui::Text(cmdr.c_str());
+        }
+
+        ImGui::EndTable();
+    }
+
+    ImGui::EndChild();
 }
 
 

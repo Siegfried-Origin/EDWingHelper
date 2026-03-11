@@ -23,6 +23,8 @@ private:
     void beginMainWindow();
     void endMainWindow();
 
+    void showCommanderLists();
+
     static void loadCommanderList(void* userdata, std::string path);
 
 private:

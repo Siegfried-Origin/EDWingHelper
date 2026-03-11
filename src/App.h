@@ -2,6 +2,7 @@
 
 #include "watchers/JournalWatcher.h"
 
+#include <array>
 #include <filesystem>
 #include <map>
 #include <string>
@@ -30,6 +31,11 @@ public:
     void onJournalEvent(const std::string& event, const std::string& journalEntry);
 
     const std::map<std::string, Status>& getCmdrList() const { return _cmdrList; }
+    
+    const std::vector<std::string>& getCmdrNeedInviteOnline() const { return _cmdrListFiltered[NeedsInvite_Online]; }
+    const std::vector<std::string>& getCmdrNeedInviteOffline() const { return _cmdrListFiltered[NeedsInvite_Offline]; }
+    const std::vector<std::string>& getCmdrInvited() const { return _cmdrListFiltered[Invited]; }
+
     const std::map<std::string, bool>& getOnlineFriends() const { return _friendsOnlineTracker; }
 
     void setCmdrStatus(const std::string& cmdrName, Status status);
@@ -39,6 +45,8 @@ private:
     void handleWingEvent(const std::string& journalEntry);
     void handleShutdownEvent();
     void handleFileheaderEvent(const std::string& journalEntry);
+
+    void refreshSortedLists();
 
     void toCmdrName(std::string& s);
 
@@ -50,6 +58,9 @@ private:
 
 private:
     std::map<std::string, Status> _cmdrList;
+
+    // Sorted lists: duplicated of _cmdrList
+    std::array<std::vector<std::string>, App::N_STATUS> _cmdrListFiltered;
 
     std::map<std::string, bool> _friendsOnlineTracker;
 

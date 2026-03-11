@@ -94,6 +94,8 @@ void App::loadCommanderList(const std::filesystem::path& pathList)
 
         _cmdrList.emplace(cmdrName, status);
     }
+
+    refreshSortedLists();
 }
 
 
@@ -121,6 +123,8 @@ void App::setCmdrStatus(const std::string& cmdrName, Status status)
     if (it != _cmdrList.end()) {
         it->second = status;
     }
+
+    refreshSortedLists();
 }
 
 
@@ -164,6 +168,8 @@ void App::handleFriendEvent(const std::string& journalEntry)
 
     // TODO: same as before, check for the behavior of "Added" event
     _friendsOnlineTracker.insert_or_assign(cmdrName, status == "Online" || status == "Added");
+
+    refreshSortedLists();
 }
 
 
@@ -205,6 +211,8 @@ void App::handleWingEvent(const std::string& journalEntry)
     //       Also, check if the even list the inviting commander as well
     // WingJoin
     // { "timestamp":"2026-03-08T20:04:41Z", "event":"WingJoin", "Others":[] }
+
+    refreshSortedLists();
 }
 
 
@@ -215,6 +223,8 @@ void App::handleShutdownEvent()
     for (auto& cmdr: _cmdrList) {
         cmdr.second = NeedsInvite_Offline;
     }
+
+    refreshSortedLists();
 }
 
 
@@ -236,6 +246,20 @@ void App::handleFileheaderEvent(const std::string& journalEntry)
 
     for (auto& cmdr : _cmdrList) {
         cmdr.second = NeedsInvite_Offline;
+    }
+
+    refreshSortedLists();
+}
+
+
+void App::refreshSortedLists()
+{
+    for (std::vector<std::string>& list : _cmdrListFiltered) {
+        list.clear();
+    }
+
+    for (auto const& [cmdr, status] : _cmdrList) {
+        _cmdrListFiltered[status].push_back(cmdr);
     }
 }
 
