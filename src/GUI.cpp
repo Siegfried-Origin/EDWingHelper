@@ -304,7 +304,8 @@ void GUI::showCommanderLists()
 
     // Online
     if (ImGui::BeginTable("Online", 2, flags)) {
-        ImGui::TableSetupColumn("Online", ImGuiTableColumnFlags_WidthStretch);
+        std::string onlineText = "Online (" + std::to_string(_app.getCmdrNeedInviteOnline().size()) + ")";
+        ImGui::TableSetupColumn(onlineText.c_str(), ImGuiTableColumnFlags_WidthStretch);
         ImGui::TableSetupColumn("");
         ImGui::TableHeadersRow();
 
@@ -344,7 +345,8 @@ void GUI::showCommanderLists()
 
     // Offline
     if (ImGui::BeginTable("Offline", 2, flags)) {
-        ImGui::TableSetupColumn("Offline", ImGuiTableColumnFlags_WidthStretch);
+        std::string offlineText = "Offline (" + std::to_string(_app.getCmdrNeedInviteOffline().size()) + ")";
+        ImGui::TableSetupColumn(offlineText.c_str(), ImGuiTableColumnFlags_WidthStretch);
         ImGui::TableSetupColumn("");
         ImGui::TableHeadersRow();
 
