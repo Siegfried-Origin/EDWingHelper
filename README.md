@@ -1,12 +1,61 @@
 # ED Wing Helper
 
-Small tool to ease instance creation from a commander list.
+Small utility to help create a shared instance in Elite Dangerous by managing wing invitations from a predefined commander list.
 
-It is currently in an very early stage and largely untested. Expect bugs.
+The tool monitors the game journal to detect when commanders are online and when they join the wing, helping the wing leader keep track of who still needs to be invited.
 
-## Draft documentation
+⚠️ This project is currently in a very early stage and largely untested. Expect bugs.
 
-- You need a commander list with each commander name on a new line and import the list with "Import List..." button.
-- Each commander must be on your friend list.
-- The tool will monitor your journal to check which commander is online and which was already added to a wing.
-- If a commander already invited becomes offline, it will be automatically removed from the "Already invited" section.
+
+## How it works
+
+1. Prepare a text file containing commander names (one name per line).
+2. Import the file using the **"Import List..."** button.
+3. Ensure all listed commanders are in your **friend list** in-game or an friend request was sent to them.
+4. The tool monitors the Elite Dangerous **journal files** to track:
+   - which commanders are **online**
+   - which commanders have **joined the wing**
+
+Commanders are automatically categorized in the UI:
+
+- **Online – waiting for invite**
+- **Offline – waiting for invite**
+- **Already invited**
+
+If a commander who was already invited **goes offline**, they are automatically removed from the *Already invited* section.
+If a commander accepts your friend request while you're building the instance, it's status will be updated.
+
+
+## Requirements
+
+- Elite Dangerous must be running
+- The game must have **journal logging enabled** (enabled by default)
+- You must be friend with a commanders to invite them in the wing
+
+
+## Planned features
+
+The following improvements are planned:
+
+### List management
+- Drag & drop a file to **replace or append** the commander list
+- Manually **add commanders from the UI**
+- **Export the commander list** to a text file
+- Monitor the list file and **auto-reload when modified**
+
+### Monitoring improvements
+- Display **counters**:
+  - total commanders
+  - remaining to invite
+  - currently in wing
+- Detect commanders **already present in the instance** via local chat monitoring
+
+### Wing management
+- Handle **wing leader disconnects / leaving the wing** (FSD jump, crashes, etc.)
+- Recover the **invited list after program restart**
+
+
+## Project status
+
+This tool is experimental and currently under active development.
+Features and behavior may change frequently.
