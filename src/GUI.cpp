@@ -96,14 +96,29 @@ void GUI::run()
             _mainWindow->beginFrame();
 
             beginMainWindow();
-
             ImGui::PushFont(fontEurostile);
 
-            if (ImGui::Button("Import List...")) {
-                _mainWindow->openCommanderListFileDialog(this, GUI::loadCommanderList);
-            }
+            menuBar();
 
-            showCommanderLists();
+            if (_app.getCmdrList().size() == 0) {
+                const char* importListText = ICON_MD_FOLDER_OPEN " Import List...";
+
+                ImVec2 size = ImGui::CalcTextSize(importListText);
+                float buttonWidth = size.x + ImGui::GetStyle().FramePadding.x * 2.0f;
+                float buttonHeight = size.y + ImGui::GetStyle().FramePadding.y * 2.0f;
+
+                ImVec2 avail = ImGui::GetContentRegionAvail();
+
+                ImGui::SetCursorPosX((avail.x - buttonWidth) * 0.5f);
+                ImGui::SetCursorPosY((avail.y - buttonHeight) * 0.5f);
+
+                if (ImGui::Button(importListText)) {
+                    _mainWindow->openCommanderListFileDialog(this, GUI::loadCommanderList);
+                }
+            }
+            else {
+                showCommanderLists();
+            }
 
             // Close confirmation if needed
             if (_mainWindow->closeRequested() && _mainWindow->isCloseConfirmationRequired()) {
@@ -238,6 +253,7 @@ void GUI::beginMainWindow()
         ImGuiWindowFlags_NoSavedSettings |
         ImGuiWindowFlags_NoCollapse |
         ImGuiWindowFlags_NoTitleBar |
+        ImGuiWindowFlags_MenuBar |
         ImGuiWindowFlags_NoResize);
 }
 
@@ -245,6 +261,26 @@ void GUI::beginMainWindow()
 void GUI::endMainWindow()
 {
     ImGui::End();
+}
+
+
+void GUI::menuBar()
+{
+    if (ImGui::BeginMenuBar()) {
+        if (ImGui::BeginMenu("File")) {
+            if (ImGui::MenuItem("Open new commander list...")) {
+                _mainWindow->openCommanderListFileDialog(this, GUI::loadCommanderList);
+            }
+
+            if (ImGui::MenuItem("Append commander list...")) {
+                _mainWindow->openCommanderListFileDialog(this, GUI::appendCommanderList);
+            }
+
+            ImGui::EndMenu();
+        }
+
+        ImGui::EndMenuBar();
+    }
 }
 
 
@@ -379,6 +415,23 @@ void GUI::loadCommanderList(void* userdata, std::string path)
     if (!path.empty()) {
         //try {
         obj->_app.loadCommanderList(path);
+        //}
+        //catch (const std::runtime_error& e) {
+        //    obj->_logErrStr = e.what();
+        //    obj->_hasError = true;
+        //}
+    }
+}
+
+
+void GUI::appendCommanderList(void* userdata, std::string path)
+{
+    GUI* obj = (GUI*)userdata;
+
+    // TODO: Handle errors and display a message
+    if (!path.empty()) {
+        //try {
+        obj->_app.appendCommanderList(path);
         //}
         //catch (const std::runtime_error& e) {
         //    obj->_logErrStr = e.what();

@@ -48,11 +48,18 @@ App::~App()
 
 void App::loadCommanderList(const std::filesystem::path& pathList)
 {
+    _cmdrList.clear();
+    appendCommanderList(pathList);
+}
+
+
+void App::appendCommanderList(const std::filesystem::path& pathList)
+{
     // TODO: support for update of current status, i.e., the already invited commanders
     //       shall get the appropriate flag
-    _cmdrList.clear();
 
     std::ifstream in(pathList);
+
     if (!in.is_open()) {
         // Silently fail in release, assert in debug
         assert(0);
@@ -73,6 +80,7 @@ void App::loadCommanderList(const std::filesystem::path& pathList)
     };
 
     std::string cmdrName;
+
     while (std::getline(in, cmdrName)) {
         trim(cmdrName);
 

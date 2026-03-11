@@ -23,9 +23,12 @@ private:
     void beginMainWindow();
     void endMainWindow();
 
+    void menuBar();
+
     void showCommanderLists();
 
     static void loadCommanderList(void* userdata, std::string path);
+    static void appendCommanderList(void* userdata, std::string path);
 
 private:
     App _app;
