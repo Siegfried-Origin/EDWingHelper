@@ -37,6 +37,10 @@ private:
     WindowSystem* _pWindowSystem = nullptr;
     WindowBorderless* _mainWindow = nullptr;
 
-    ImFont* fontEurocaps = nullptr;
-    ImFont* fontEurostile = nullptr;
+    ImFont* _fontEurocaps = nullptr;
+    ImFont* _fontEurostile = nullptr;
+
+    bool _showAddCommander = false;
+    bool _showEditButtons = false;
+    bool _confirmClearCmdrList = false;
 };

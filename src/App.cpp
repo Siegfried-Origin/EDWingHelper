@@ -66,42 +66,59 @@ void App::appendCommanderList(const std::filesystem::path& pathList)
         return;
     }
 
-    auto ltrim = [](std::string &s) {
-        s.erase(s.begin(), std::find_if(s.begin(), s.end(),
-            [](unsigned char ch) { return !std::isspace(ch); }));
-    };
-    auto rtrim = [](std::string &s) {
-        s.erase(std::find_if(s.rbegin(), s.rend(),
-            [](unsigned char ch) { return !std::isspace(ch); }).base(), s.end());
-    };
-    auto trim = [&](std::string &s) {
-        ltrim(s);
-        rtrim(s);
-    };
-
     std::string cmdrName;
 
     while (std::getline(in, cmdrName)) {
-        trim(cmdrName);
+        addCommander(cmdrName, false);
+    }
 
-        if (cmdrName.empty()) {
-            continue;
-        }
+    refreshSortedLists();
+}
 
-        toCmdrName(cmdrName);
+
+void App::addCommander(std::string commanderName, bool refresh)
+{
+    auto ltrim = [](std::string& s) {
+        s.erase(s.begin(), std::find_if(s.begin(), s.end(),
+            [](unsigned char ch) { return !std::isspace(ch); }));
+        };
+    auto rtrim = [](std::string& s) {
+        s.erase(std::find_if(s.rbegin(), s.rend(),
+            [](unsigned char ch) { return !std::isspace(ch); }).base(), s.end());
+        };
+    auto trim = [&](std::string& s) {
+        ltrim(s);
+        rtrim(s);
+        };
+
+    trim(commanderName);
+
+    if (!commanderName.empty()) {
+        toCmdrName(commanderName);
 
         Status status = NeedsInvite_Offline;
 
         // Check from previous recorded events if the commander is online
-        auto it = _friendsOnlineTracker.find(cmdrName);
+        auto it = _friendsOnlineTracker.find(commanderName);
 
         if (it != _friendsOnlineTracker.end() &&
-            _friendsOnlineTracker[cmdrName]) {
+            _friendsOnlineTracker[commanderName]) {
             status = NeedsInvite_Online;
         }
 
-        _cmdrList.emplace(cmdrName, status);
+        _cmdrList.emplace(commanderName, status);
     }
+
+    if (refresh) {
+        refreshSortedLists();
+    }
+}
+
+
+void App::removeCommander(std::string commanderName)
+{
+    toCmdrName(commanderName);
+    _cmdrList.erase(commanderName);
 
     refreshSortedLists();
 }
@@ -175,10 +192,12 @@ void App::handleFriendEvent(const std::string& journalEntry)
         else if (status == "Online") {
             if (it->second == Invited) {
                 // This shall not happen, crash in debug run
-                assert(0);
+                // Well, sometimes it happens....
+                //assert(0);
             }
-
-            it->second = NeedsInvite_Online;
+            else {
+                it->second = NeedsInvite_Online;
+            }
         }
         else if (status == "Offline") {
             it->second = NeedsInvite_Offline;

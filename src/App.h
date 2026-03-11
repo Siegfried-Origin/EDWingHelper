@@ -30,6 +30,9 @@ public:
     void appendCommanderList(const std::filesystem::path& pathList);
     void exportCommanderList(const std::filesystem::path& path);
 
+    void addCommander(std::string commanderName, bool refresh = true);
+    void removeCommander(std::string commanderName);
+
     void onJournalEvent(const std::string& event, const std::string& journalEntry);
 
     const std::map<std::string, Status>& getCmdrList() const { return _cmdrList; }

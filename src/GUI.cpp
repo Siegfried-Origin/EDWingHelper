@@ -43,7 +43,7 @@ GUI::GUI(
     // Eurocaps
     float eurocapsFontSize = style.FontScaleDpi * 26.f;
 
-    fontEurocaps = io.Fonts->AddFontFromMemoryCompressedTTF(
+    _fontEurocaps = io.Fonts->AddFontFromMemoryCompressedTTF(
         EUROCAPS_compressed_data,
         EUROCAPS_compressed_size,
         eurocapsFontSize
@@ -58,7 +58,7 @@ GUI::GUI(
     );
 
     // Eurostile
-    fontEurostile = io.Fonts->AddFontFromMemoryCompressedTTF(
+    _fontEurostile = io.Fonts->AddFontFromMemoryCompressedTTF(
         Eurostile_compressed_data,
         Eurostile_compressed_size,
         fontSize
@@ -95,7 +95,7 @@ void GUI::run()
             _mainWindow->beginFrame();
 
             beginMainWindow();
-            ImGui::PushFont(fontEurostile);
+            ImGui::PushFont(_fontEurostile);
 
             menuBar();
 
@@ -222,6 +222,25 @@ void GUI::endMainWindow()
 
 void GUI::menuBar()
 {
+    bool allowSave = _app.getCmdrList().size() > 0;
+
+    // TODO: currently shortcuts are not relable so deactivated
+    if (ImGui::Shortcut(ImGuiMod_Ctrl | ImGuiKey_O, ImGuiInputFlags_RouteGlobal)) {
+        _mainWindow->openCommanderListFileDialog(this, GUI::loadCommanderList);
+    }
+
+    if (ImGui::Shortcut(ImGuiMod_Shift | ImGuiMod_Ctrl | ImGuiKey_O, ImGuiInputFlags_RouteGlobal)) {
+        _mainWindow->openCommanderListFileDialog(this, GUI::appendCommanderList);
+    }
+
+    if (allowSave && ImGui::Shortcut(ImGuiMod_Ctrl | ImGuiKey_S, ImGuiInputFlags_RouteGlobal)) {
+        _mainWindow->saveCommanderListFileDialog(this, GUI::exportCommanderList);
+    }
+
+    if (ImGui::Shortcut(ImGuiMod_Ctrl | ImGuiKey_N, ImGuiInputFlags_RouteGlobal)) {
+        _showAddCommander = true;
+    }
+
     if (ImGui::BeginMenuBar()) {
         if (ImGui::BeginMenu("File")) {
             if (ImGui::MenuItem("Open new commander list...")) {
@@ -234,9 +253,25 @@ void GUI::menuBar()
 
             ImGui::Separator();
 
-            if (ImGui::MenuItem("Export commander list...", NULL, false, _app.getCmdrList().size() > 0)) {
+            if (ImGui::MenuItem("Export commander list...", NULL, false, allowSave)) {
                 _mainWindow->saveCommanderListFileDialog(this, GUI::exportCommanderList);
             }
+
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("Edit")) {
+            if (ImGui::MenuItem("Add commander...", "Ctrl+N")) {
+                _showAddCommander = true;
+            }
+
+            ImGui::MenuItem("Show edit buttons", NULL, &_showEditButtons);
+
+            //ImGui::Separator();
+
+            //if (ImGui::MenuItem("Clear commander list", NULL, false, _app.getCmdrList().size() > 0)) {
+            //    _confirmClearCmdrList = true;
+            //}
 
             ImGui::EndMenu();
         }
@@ -275,7 +310,7 @@ void GUI::showCommanderLists()
 
         const std::vector<std::string>& cmdrNeedsInviteOnline = _app.getCmdrNeedInviteOnline();
 
-        ImGui::PushFont(fontEurocaps);
+        ImGui::PushFont(_fontEurocaps);
 
         for (const std::string& cmdr : cmdrNeedsInviteOnline) {
             ImGui::TableNextRow();
@@ -286,18 +321,33 @@ void GUI::showCommanderLists()
 
             ImGui::TableNextColumn();
 
-            ImGui::PushID(uid++);
+            if (_showEditButtons) {
+                ImGui::PushID(uid++);
 
-            if (ImGui::Button(ICON_MD_ARROW_FORWARD)) {
-                _app.setCmdrStatus(cmdr, App::Invited);
-            }
+                if (ImGui::Button(ICON_MD_ARROW_FORWARD)) {
+                    _app.setCmdrStatus(cmdr, App::Invited);
+                }
 
-            if (ImGui::IsItemHovered()) {
-                ImGui::PopFont();
-                ImGui::SetTooltip("Manualy move to the invited list");
-                ImGui::PushFont(fontEurocaps);
+                if (ImGui::IsItemHovered()) {
+                    ImGui::PopFont();
+                    ImGui::SetTooltip("Manualy move to the invited list");
+                    ImGui::PushFont(_fontEurocaps);
+                }
+
+                ImGui::SameLine();
+
+                if (ImGui::Button(ICON_MD_DELETE)) {
+                    _app.removeCommander(cmdr);
+                }
+                
+                if (ImGui::IsItemHovered()) {
+                    ImGui::PopFont();
+                    ImGui::SetTooltip("Remove from list");
+                    ImGui::PushFont(_fontEurocaps);
+                }
+
+                ImGui::PopID();
             }
-            ImGui::PopID();
         }
 
         ImGui::PopFont();
@@ -312,9 +362,11 @@ void GUI::showCommanderLists()
         ImGui::TableSetupColumn("");
         ImGui::TableHeadersRow();
 
+        uint32_t uid = 0;
+
         const std::vector<std::string>& cmdrNeedsInviteOffline = _app.getCmdrNeedInviteOffline();
 
-        ImGui::PushFont(fontEurocaps);
+        ImGui::PushFont(_fontEurocaps);
 
         for (const std::string& cmdr : cmdrNeedsInviteOffline) {
             ImGui::TableNextRow();
@@ -324,6 +376,22 @@ void GUI::showCommanderLists()
             ImGui::Text(cmdr.c_str());
 
             ImGui::TableNextColumn();
+
+            if (_showEditButtons) {
+                ImGui::PushID(uid++);
+
+                if (ImGui::Button(ICON_MD_DELETE)) {
+                    _app.removeCommander(cmdr);
+                }
+
+                if (ImGui::IsItemHovered()) {
+                    ImGui::PopFont();
+                    ImGui::SetTooltip("Remove from list");
+                    ImGui::PushFont(_fontEurocaps);
+                }
+
+                ImGui::PopID();
+            }
         }
 
         ImGui::PopFont();
@@ -352,25 +420,41 @@ void GUI::showCommanderLists()
         uint32_t uid = 0;
         const std::vector<std::string>& cmdrInvited = _app.getCmdrInvited();
 
-        ImGui::PushFont(fontEurocaps);
+        ImGui::PushFont(_fontEurocaps);
 
         for (const std::string& cmdr : cmdrInvited) {
             ImGui::TableNextRow();
             ImGui::TableSetBgColor(ImGuiTableBgTarget_RowBg1, rowInvited);
 
             ImGui::TableNextColumn();
-            ImGui::PushID(uid++);
-            
-            if (ImGui::Button(ICON_MD_ARROW_BACK)) {
-                _app.setCmdrStatus(cmdr, App::NeedsInvite_Online);
-            }
 
-            if (ImGui::IsItemHovered()) {
-                ImGui::PopFont();
-                ImGui::SetTooltip("Manualy remove from the invited list");
-                ImGui::PushFont(fontEurocaps);
+            if (_showEditButtons) {
+                ImGui::PushID(uid++);
+
+                if (ImGui::Button(ICON_MD_ARROW_BACK)) {
+                    _app.setCmdrStatus(cmdr, App::NeedsInvite_Online);
+                }
+
+                if (ImGui::IsItemHovered()) {
+                    ImGui::PopFont();
+                    ImGui::SetTooltip("Manualy remove from the invited list");
+                    ImGui::PushFont(_fontEurocaps);
+                }
+
+                ImGui::SameLine();
+
+                if (ImGui::Button(ICON_MD_DELETE)) {
+                    _app.removeCommander(cmdr);
+                }
+
+                if (ImGui::IsItemHovered()) {
+                    ImGui::PopFont();
+                    ImGui::SetTooltip("Remove from list");
+                    ImGui::PushFont(_fontEurocaps);
+                }
+
+                ImGui::PopID();
             }
-            ImGui::PopID();
 
             ImGui::TableNextColumn();
             ImGui::Text(cmdr.c_str());
@@ -387,6 +471,8 @@ void GUI::showCommanderLists()
 
 void GUI::showConfirmationMessages()
 {
+    static char inputName[255] = { 0 };
+
     // Close confirmation if needed
     if (_mainWindow->closeRequested() && _mainWindow->isCloseConfirmationRequired()) {
         ImVec2 center = ImGui::GetMainViewport()->GetCenter();
@@ -423,6 +509,59 @@ void GUI::showConfirmationMessages()
 
             if (ImGui::Button("Confirm Exit", ImVec2(buttonWidth, 0))) {
                 _mainWindow->allowClose(true);
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::PopStyleColor(3);
+
+            ImGui::EndPopup();
+        }
+    }
+    else if (_showAddCommander) {
+        ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+        ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+        ImGui::OpenPopup("Add a commander");
+
+        if (ImGui::BeginPopupModal("Add a commander", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+            if (ImGui::IsWindowAppearing()) {
+                ImGui::SetKeyboardFocusHere();
+            }
+
+            ImGui::Text("Commander name:");
+            ImGui::SameLine();
+
+            // TODO: use a callback to show completion from known commanders in
+            //       online friend list.
+            if (ImGui::InputText("##CMDR_NAME", inputName, sizeof(inputName), ImGuiInputTextFlags_EnterReturnsTrue))
+            {
+                _app.addCommander(inputName);
+                _showAddCommander = false;
+                std::memset(inputName, 0, sizeof(inputName));
+                ImGui::CloseCurrentPopup();
+            }
+
+            float buttonWidth = 134.0f;
+            float spacing = ImGui::GetStyle().ItemSpacing.x;
+            float totalWidth = buttonWidth * 2 + spacing;
+
+            float avail = ImGui::GetContentRegionAvail().x;
+            ImGui::SetCursorPosX((avail - totalWidth) * 0.5f);
+
+            if (ImGui::Button("Cancel", ImVec2(buttonWidth, 0))) {
+                _showAddCommander = false;
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::SameLine();
+
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.1f, 0.1f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.9f, 0.2f, 0.2f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.7f, 0.0f, 0.0f, 1.0f));
+
+            if (ImGui::Button("OK", ImVec2(buttonWidth, 0))) {
+                _app.addCommander(inputName);
+                _showAddCommander = false;
+                std::memset(inputName, 0, sizeof(inputName));
                 ImGui::CloseCurrentPopup();
             }
 
