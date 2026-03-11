@@ -259,7 +259,10 @@ void App::handleShutdownEvent()
     _friendsOnlineTracker.clear();
 
     for (auto& cmdr: _cmdrList) {
-        cmdr.second = NeedsInvite_Offline;
+        // Keeps the already instanced commanders as it
+        if (cmdr.second == NeedsInvite_Online) {
+            cmdr.second = NeedsInvite_Offline;
+        }
     }
 
     refreshSortedLists();
@@ -283,7 +286,10 @@ void App::handleFileheaderEvent(const std::string& journalEntry)
     }
 
     for (auto& cmdr : _cmdrList) {
-        cmdr.second = NeedsInvite_Offline;
+        // Keeps the already instanced commanders as it
+        if (cmdr.second == NeedsInvite_Online) {
+            cmdr.second = NeedsInvite_Offline;
+        }
     }
 
     refreshSortedLists();
