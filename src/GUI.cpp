@@ -1,6 +1,10 @@
 #include "GUI.h"
 
-#include <array>
+#include "fonts/eurocaps.h"
+#include "fonts/eurostile.h"
+#include "fonts/icons.h"
+#include "fonts/IconsMaterialDesign.h"
+
 
 GUI::GUI(
     const std::filesystem::path& execPath,
@@ -13,6 +17,59 @@ GUI::GUI(
         "ED Wing Helper",
         execPath / "imgui.ini",
         1024, 768
+    );
+
+    ImGuiIO& io = ImGui::GetIO();
+    ImGuiStyle& style = ImGui::GetStyle();
+
+    float fontSize = style.FontScaleDpi * 22.f;
+    float iconFontSize = 0.8 * fontSize;//style.FontScaleDpi * 24.f;
+
+    // Add icon glyphs
+    static const ImWchar icons_ranges[] = { ICON_MIN_MD, ICON_MAX_MD, 0 };
+    ImFontConfig cfgIcons;
+    cfgIcons.MergeMode = true;
+    cfgIcons.PixelSnapH = true;
+    cfgIcons.GlyphMinAdvanceX = fontSize;
+    cfgIcons.GlyphOffset.y = iconFontSize / 6.f;
+
+    io.Fonts->AddFontFromMemoryCompressedTTF(
+        Icons_compressed_data,
+        Icons_compressed_size,
+        iconFontSize,
+        &cfgIcons
+    );
+
+    // Eurocaps
+    float eurocapsFontSize = style.FontScaleDpi * 26.f;
+
+    fontEurocaps = io.Fonts->AddFontFromMemoryCompressedTTF(
+        EUROCAPS_compressed_data,
+        EUROCAPS_compressed_size,
+        eurocapsFontSize
+    );
+
+    io.Fonts->AddFontFromMemoryCompressedTTF(
+        Icons_compressed_data,
+        Icons_compressed_size,
+        iconFontSize,
+        &cfgIcons,
+        icons_ranges
+    );
+
+    // Eurostile
+    fontEurostile = io.Fonts->AddFontFromMemoryCompressedTTF(
+        Eurostile_compressed_data,
+        Eurostile_compressed_size,
+        fontSize
+    );
+
+    io.Fonts->AddFontFromMemoryCompressedTTF(
+        Icons_compressed_data,
+        Icons_compressed_size,
+        iconFontSize,
+        &cfgIcons,
+        icons_ranges
     );
 }
 
@@ -40,6 +97,8 @@ void GUI::run()
 
             beginMainWindow();
 
+            ImGui::PushFont(fontEurostile);
+
             if (ImGui::Button("Import List...")) {
                 _mainWindow->openCommanderListFileDialog(this, GUI::loadCommanderList);
             }
@@ -61,14 +120,14 @@ void GUI::run()
                         "Are you sure you want to exit the program ?\n"
                     );
 
-                    float buttonWidth = 120.0f;
+                    float buttonWidth = 134.0f;
                     float spacing = ImGui::GetStyle().ItemSpacing.x;
                     float totalWidth = buttonWidth * 2 + spacing;
 
                     float avail = ImGui::GetContentRegionAvail().x;
                     ImGui::SetCursorPosX((avail - totalWidth) * 0.5f);
 
-                    if (ImGui::Button("Cancel", ImVec2(120, 0))) {
+                    if (ImGui::Button("Cancel", ImVec2(buttonWidth, 0))) {
                         _mainWindow->resetCloseRequested();
                         ImGui::CloseCurrentPopup();
                     }
@@ -80,7 +139,7 @@ void GUI::run()
                     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.9f, 0.2f, 0.2f, 1.0f));
                     ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.7f, 0.0f, 0.0f, 1.0f));
 
-                    if (ImGui::Button("Confirm Exit", ImVec2(120, 0))) {
+                    if (ImGui::Button("Confirm Exit", ImVec2(buttonWidth, 0))) {
                         _mainWindow->allowClose(true);
                         ImGui::CloseCurrentPopup();
                     }
@@ -90,6 +149,8 @@ void GUI::run()
                     ImGui::EndPopup();
                 }
             }
+
+            ImGui::PopFont();
 
             endMainWindow();
 
@@ -135,10 +196,10 @@ void GUI::beginMainWindow()
         ImGui::PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(255, 255, 255, 50));
         {
             ImGui::SetCursorPos(ImVec2(pViewport->Size.x - 3 * buttonWidth, 0.));
-            if (ImGui::Button("-", buttonSize)) { _mainWindow->minimizeWindow(); }
+            if (ImGui::Button(ICON_MD_MINIMIZE, buttonSize)) { _mainWindow->minimizeWindow(); }
 
             ImGui::SetCursorPos(ImVec2(pViewport->Size.x - 2 * buttonWidth, 0.));
-            if (ImGui::Button("+", buttonSize)) { _mainWindow->maximizeRestoreWindow(); }
+            if (ImGui::Button(ICON_MD_CHECK_BOX_OUTLINE_BLANK, buttonSize)) { _mainWindow->maximizeRestoreWindow(); }
         }
         ImGui::PopStyleColor(3);
 
@@ -148,7 +209,7 @@ void GUI::beginMainWindow()
         ImGui::PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(255, 0, 0, 255));
         {
             ImGui::SetCursorPos(ImVec2(pViewport->Size.x - buttonWidth, 0.));
-            if (ImGui::Button("x", buttonSize)) { _mainWindow->closeWindow(); }
+            if (ImGui::Button(ICON_MD_CLOSE, buttonSize)) { _mainWindow->closeWindow(); }
         }
         ImGui::PopStyleColor(3);
 
@@ -209,6 +270,8 @@ void GUI::showCommanderLists()
 
         const std::vector<std::string>& cmdrNeedsInviteOnline = _app.getCmdrNeedInviteOnline();
 
+        ImGui::PushFont(fontEurocaps);
+
         for (const std::string& cmdr : cmdrNeedsInviteOnline) {
             ImGui::TableNextRow();
             ImGui::TableNextColumn();
@@ -217,14 +280,20 @@ void GUI::showCommanderLists()
             ImGui::TableNextColumn();
 
             ImGui::PushID(uid++);
-            if (ImGui::Button("->")) {
+
+            if (ImGui::Button(ICON_MD_ARROW_FORWARD)) {
                 _app.setCmdrStatus(cmdr, App::Invited);
             }
+
             if (ImGui::IsItemHovered()) {
+                ImGui::PopFont();
                 ImGui::SetTooltip("Manualy move to the invited list");
+                ImGui::PushFont(fontEurocaps);
             }
             ImGui::PopID();
         }
+
+        ImGui::PopFont();
 
         ImGui::EndTable();
     }
@@ -237,6 +306,8 @@ void GUI::showCommanderLists()
 
         const std::vector<std::string>& cmdrNeedsInviteOffline = _app.getCmdrNeedInviteOffline();
 
+        ImGui::PushFont(fontEurocaps);
+
         for (const std::string& cmdr : cmdrNeedsInviteOffline) {
             ImGui::TableNextRow();
             ImGui::TableNextColumn();
@@ -244,6 +315,8 @@ void GUI::showCommanderLists()
 
             ImGui::TableNextColumn();
         }
+
+        ImGui::PopFont();
 
         ImGui::EndTable();
     }
@@ -267,21 +340,29 @@ void GUI::showCommanderLists()
         uint32_t uid = 0;
         const std::vector<std::string>& cmdrInvited = _app.getCmdrInvited();
 
+        ImGui::PushFont(fontEurocaps);
+
         for (const std::string& cmdr : cmdrInvited) {
             ImGui::TableNextRow();
             ImGui::TableNextColumn();
             ImGui::PushID(uid++);
-            if (ImGui::Button("<-")) {
+            
+            if (ImGui::Button(ICON_MD_ARROW_BACK)) {
                 _app.setCmdrStatus(cmdr, App::NeedsInvite_Online);
             }
+
             if (ImGui::IsItemHovered()) {
+                ImGui::PopFont();
                 ImGui::SetTooltip("Manualy remove from the invited list");
+                ImGui::PushFont(fontEurocaps);
             }
             ImGui::PopID();
 
             ImGui::TableNextColumn();
             ImGui::Text(cmdr.c_str());
         }
+
+        ImGui::PopFont();
 
         ImGui::EndTable();
     }

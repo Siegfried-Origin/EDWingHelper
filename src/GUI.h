@@ -31,4 +31,8 @@ private:
     App _app;
     WindowSystem* _pWindowSystem = nullptr;
     WindowBorderless* _mainWindow = nullptr;
+
+    //ImFont* fontIcons = nullptr;
+    ImFont* fontEurocaps = nullptr;
+    ImFont* fontEurostile = nullptr;
 };
