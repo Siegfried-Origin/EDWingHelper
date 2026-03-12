@@ -560,6 +560,8 @@ void GUI::showConfirmationMessages()
             ImGui::Text("Commander name:");
             ImGui::SameLine();
 
+            ImGui::PushFont(_fontEurocaps);
+
             // TODO: use a callback to show completion from known commanders in
             //       online friend list.
             if (ImGui::InputText("##CMDR_NAME", inputName, sizeof(inputName), ImGuiInputTextFlags_EnterReturnsTrue))
@@ -569,6 +571,8 @@ void GUI::showConfirmationMessages()
                 std::memset(inputName, 0, sizeof(inputName));
                 ImGui::CloseCurrentPopup();
             }
+
+            ImGui::PopFont();
 
             float buttonWidth = 134.0f;
             float spacing = ImGui::GetStyle().ItemSpacing.x;
