@@ -597,7 +597,9 @@ void GUI::showConfirmationMessages()
                 "Are you sure you want to exit the program ?\n"
             );
 
-            float buttonWidth = 134.0f;
+            ImVec2 textSize = ImGui::CalcTextSize("Confirm Exit");
+            float buttonWidth = textSize.x + ImGui::GetStyle().FramePadding.x * 2.0f;
+
             float spacing = ImGui::GetStyle().ItemSpacing.x;
             float totalWidth = buttonWidth * 2 + spacing;
 
@@ -653,7 +655,8 @@ void GUI::showConfirmationMessages()
 
             ImGui::PopFont();
 
-            float buttonWidth = 134.0f;
+            ImVec2 textSize = ImGui::CalcTextSize("Cancel");
+            float buttonWidth = textSize.x + ImGui::GetStyle().FramePadding.x * 2.0f;
             float spacing = ImGui::GetStyle().ItemSpacing.x;
             float totalWidth = buttonWidth * 2 + spacing;
 
