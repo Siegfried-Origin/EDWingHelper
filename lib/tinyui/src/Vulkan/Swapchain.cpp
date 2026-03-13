@@ -217,7 +217,7 @@ VkResult Swapchain::acquireNextImage(
     const VkResult result = vkAcquireNextImageKHR(
         _device,
         _swapchain,
-        0,
+        UINT64_MAX,
         _semaphoreImageAcquired[_iCurrFrame],
         VK_NULL_HANDLE,//_fencePresent[_iCurrFrame],
         &_iSwapchainImage
