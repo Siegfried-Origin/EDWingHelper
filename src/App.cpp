@@ -96,14 +96,14 @@ void App::addCommander(std::string commanderName, bool refresh)
     if (!commanderName.empty()) {
         toCmdrName(commanderName);
 
-        Status status = NeedsInvite_Offline;
+        Status status = { Status::NeedsInvite_Offline, false };
 
         // Check from previous recorded events if the commander is online
         auto it = _friendsOnlineTracker.find(commanderName);
 
         if (it != _friendsOnlineTracker.end() &&
             _friendsOnlineTracker[commanderName]) {
-            status = NeedsInvite_Online;
+            status = { Status::NeedsInvite_Online, false };
         }
 
         _cmdrList.emplace(commanderName, status);
@@ -135,29 +135,12 @@ void App::exportCommanderList(const std::filesystem::path& path)
 }
 
 
-void App::onJournalEvent(const std::string& event, const std::string& journalEntry)
-{
-    if (event == "Friends") {
-        handleFriendEvent(journalEntry);
-    }
-    else if (event == "WingAdd" || event == "WingJoin" || event == "WingLeave") {
-        handleWingEvent(journalEntry);
-    }
-    else if (event == "Shutdown") {
-        handleShutdownEvent();
-    }
-    else if (event == "Fileheader") {
-        handleFileheaderEvent(journalEntry);
-    }
-}
-
-
 void App::setCmdrStatusInvited(const std::string& cmdrName)
 {
     auto it = _cmdrList.find(cmdrName);
 
     if (it != _cmdrList.end()) {
-        it->second = Invited;
+        it->second = { Status::AlreadyWingedUnconfirmed, true };
     }
 
     refreshSortedLists();
@@ -169,19 +152,38 @@ void App::setCmdrStatusWaiting(const std::string& cmdrName)
     auto it = _cmdrList.find(cmdrName);
 
     if (it != _cmdrList.end()) {
-        Status status = NeedsInvite_Offline;
-
         auto itFriendList = _friendsOnlineTracker.find(cmdrName);
 
         if (itFriendList != _friendsOnlineTracker.end() &&
             _friendsOnlineTracker[cmdrName]) {
-            status = NeedsInvite_Online;
+            it->second = { Status::NeedsInvite_Online, true };
         }
-
-        it->second = status;
+        else {
+            it->second = { Status::NeedsInvite_Offline, true };
+        }
     }
 
     refreshSortedLists();
+}
+
+
+void App::onJournalEvent(const std::string& event, const std::string& journalEntry)
+{
+    if (event == "Friends") {
+        handleFriendEvent(journalEntry);
+    }
+    else if (event == "WingAdd" || event == "WingJoin" || event == "WingLeave") {
+        handleWingEvent(journalEntry);
+    }
+    else if (event == "ReceiveText") {
+        handleReceiveTextEvent(journalEntry);
+    }
+    else if (event == "Shutdown") {
+        handleShutdownEvent();
+    }
+    else if (event == "Fileheader") {
+        handleFileheaderEvent(journalEntry);
+    }
 }
 
 
@@ -208,20 +210,32 @@ void App::handleFriendEvent(const std::string& journalEntry)
             // TODO: check if this is triggered after accepting an invite
             //       or also when inviting a new - potentially offline -
             //       cmdr to our friend list
-            it->second = NeedsInvite_Online;
+            it->second = { Status::NeedsInvite_Online, false };;
         }
         else if (status == "Online") {
-            if (it->second == Invited) {
-                // This shall not happen, crash in debug run
-                // Well, sometimes it happens....
-                //assert(0);
+            /*
+            This is not reliable: sometimes we get two `Online` event
+            without the matching `Offline` event...
+            if (it->second.status == Status::AlreadyWingedActive ||
+                it->second.status == Status::AlreadyWingedUnconfirmed) {
+                // We move the commander to the "auto" section to then detect potential
+                // future disconect
+                if (it->second.manualyMovedToWing) {
+                    it->second.manualyMovedToWing = false;
+                }
+                else {
+                    // This commander experienced a disconnection durign the instance
+                    // creation
+                    it->second = { Status::NeedsInvite_Online, false };
+                }
             }
-            else {
-                it->second = NeedsInvite_Online;
+            else */ if (it->second.status == Status::NeedsInvite_Offline) {
+                // This commander became online
+                it->second = { Status::NeedsInvite_Online, false };
             }
         }
         else if (status == "Offline") {
-            it->second = NeedsInvite_Offline;
+            it->second = { Status::NeedsInvite_Offline, false };
         }
     }
 
@@ -258,20 +272,74 @@ void App::handleWingEvent(const std::string& journalEntry)
 
         if (it != _cmdrList.end()) {
             if (event == "WingAdd") {
-                it->second = Invited;
+                if (it->second.status != Status::AlreadyWingedActive) {
+                    it->second.status = Status::AlreadyWingedUnconfirmed;
+                }
+
+                it->second.manualyMovedToWing = false;
+            }
+        }
+    }
+    else if (event == "WingJoin") {
+        if (!json.contains("Others")) {
+            assert(0);
+            return;
+        }
+
+        for (const auto& other : json["Others"]) {
+            std::string cmdrName = other.get<std::string>();
+            toCmdrName(cmdrName);
+
+            auto it = _cmdrList.find(cmdrName);
+            if (it != _cmdrList.end()) {
+                if (it->second.status != Status::AlreadyWingedActive) {
+                    it->second.status = Status::AlreadyWingedUnconfirmed;
+                }
+
+                it->second.manualyMovedToWing = false;
             }
         }
     }
 
-    // WingLeave
-    // { "timestamp":"2026-03-08T20:04:06Z", "event":"WingLeave" }
-
-    // TODO: we want to make all others commanders as JoinedWing.
-    //       Also, check if the even list the inviting commander as well
-    // WingJoin
-    // { "timestamp":"2026-03-08T20:04:41Z", "event":"WingJoin", "Others":[] }
-
     refreshSortedLists();
+}
+
+
+void App::handleReceiveTextEvent(const std::string& journalEntry)
+{
+    const nlohmann::json json = nlohmann::json::parse(journalEntry);
+
+    if (!json.contains("event") || json["event"] != "ReceiveText" ||
+        !json.contains("From") ||
+        !json.contains("Channel")) {
+        // Silently ignore when not in debug mode, this shall not happen
+        assert(0);
+        return;
+    }
+
+    const std::string& from = json["From"];
+    const std::string& channel = json["Channel"];
+
+    if (channel == "local") {
+        std::string cmdrName = from;
+        toCmdrName(cmdrName);
+        auto it = _cmdrList.find(cmdrName);
+
+        if (it != _cmdrList.end()) {
+            switch (it->second.status) {
+                case Status::NeedsInvite_Online:
+                case Status::AlreadyWingedActive:
+                case Status::AlreadyWingedUnconfirmed:
+                    it->second = { Status::AlreadyWingedActive, false };
+                    break;
+                case Status::NeedsInvite_Offline:
+                case Status::N_STATUS:
+                    // That shall not happen
+                    assert(0);
+                    break;
+            }
+        }
+    }
 }
 
 
@@ -281,8 +349,16 @@ void App::handleShutdownEvent()
 
     for (auto& cmdr: _cmdrList) {
         // Keeps the already instanced commanders as it
-        if (cmdr.second == NeedsInvite_Online) {
-            cmdr.second = NeedsInvite_Offline;
+        if (cmdr.second.status == Status::NeedsInvite_Online) {
+            cmdr.second.status = Status::NeedsInvite_Offline;
+        }
+
+        // Now all winged commander must be switched to "manually winged"
+        // to prevent moving them back to the NeedsInvite section after
+        // an online event
+        if (cmdr.second.status == Status::AlreadyWingedActive ||
+            cmdr.second.status == Status::AlreadyWingedUnconfirmed) {
+            cmdr.second = { Status::AlreadyWingedUnconfirmed, true };
         }
     }
 
@@ -292,7 +368,6 @@ void App::handleShutdownEvent()
 
 void App::handleFileheaderEvent(const std::string& journalEntry)
 {
-    // TODO: handle file header and reset if part == 1
     const nlohmann::json json = nlohmann::json::parse(journalEntry);
 
     if (!json.contains("event") || json["event"] != "Fileheader" ||
@@ -307,9 +382,18 @@ void App::handleFileheaderEvent(const std::string& journalEntry)
     }
 
     for (auto& cmdr : _cmdrList) {
-        // Keeps the already instanced commanders as it
-        if (cmdr.second == NeedsInvite_Online) {
-            cmdr.second = NeedsInvite_Offline;
+        // We are not sure if the NeedInvite commanders are still online.
+        // We will wait for the Friend Online event 
+        if (cmdr.second.status == Status::NeedsInvite_Online) {
+            cmdr.second.status = Status::NeedsInvite_Offline;
+        }
+
+        // Now all winged commander must be switched to "manually winged"
+        // to prevent moving them back to the NeedsInvite section after
+        // an online event
+        if (cmdr.second.status == Status::AlreadyWingedActive ||
+            cmdr.second.status == Status::AlreadyWingedUnconfirmed) {
+            cmdr.second = { Status::AlreadyWingedUnconfirmed, true };
         }
     }
 
@@ -324,7 +408,7 @@ void App::refreshSortedLists()
     }
 
     for (auto const& [cmdr, status] : _cmdrList) {
-        _cmdrListFiltered[status].push_back(cmdr);
+        _cmdrListFiltered[status.status].push_back(cmdr);
     }
 }
 

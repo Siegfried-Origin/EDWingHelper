@@ -88,7 +88,7 @@ void GUI::run()
         // Do not update this field when a close is requested, otherwise
         // it interferes with the event loop.
         if (!_mainWindow->closeRequested()) {
-            _mainWindow->allowClose(_app.getCmdrInvited().size() == 0);
+            _mainWindow->allowClose(_app.getCmdrInvitedConfirmed().size() + _app.getCmdrInvitedUnconfirmed().size() == 0);
         }
 
         if (!_mainWindow->minimized()) {
@@ -313,10 +313,14 @@ void GUI::showCommanderLists()
         ImGui::PushFont(_fontEurocaps);
 
         for (const std::string& cmdr : cmdrNeedsInviteOnline) {
-            ImGui::TableNextRow();
+            // Ensures height stay consistent regardless if edit buttons are displayed
+            const float rowHeight = ImGui::GetFrameHeight();
+
+            ImGui::TableNextRow(ImGuiTableRowFlags_None, rowHeight);
             ImGui::TableSetBgColor(ImGuiTableBgTarget_RowBg1, rowOnline);
 
             ImGui::TableNextColumn();
+            ImGui::AlignTextToFramePadding();
             ImGui::Text(cmdr.c_str());
 
             ImGui::TableNextColumn();
@@ -375,10 +379,14 @@ void GUI::showCommanderLists()
         ImGui::PushFont(_fontEurocaps);
 
         for (const std::string& cmdr : cmdrNeedsInviteOffline) {
-            ImGui::TableNextRow();
+            // Ensures height stay consistent regardless if edit buttons are displayed
+            const float rowHeight = ImGui::GetFrameHeight();
+
+            ImGui::TableNextRow(ImGuiTableRowFlags_None, rowHeight);
             ImGui::TableSetBgColor(ImGuiTableBgTarget_RowBg1, rowOffline);
 
             ImGui::TableNextColumn();
+            ImGui::AlignTextToFramePadding();
             ImGui::Text(cmdr.c_str());
 
             ImGui::TableNextColumn();
@@ -426,28 +434,32 @@ void GUI::showCommanderLists()
     ImGui::EndChild();
 
     // ------------------------------------------------------------------------
-    // Already invited
+    // Instanced
     // ------------------------------------------------------------------------
 
-    const size_t totalInvited = _app.getCmdrInvited().size();
+    const size_t totalInvited = _app.getCmdrInvitedConfirmed().size() + _app.getCmdrInvitedUnconfirmed().size();
 
     ImGui::SameLine();
     ImGui::BeginChild("Invited", ImVec2(0, 0), ImGuiChildFlags_Borders);
-    ImGui::Text("Already invited (%d)", totalInvited);
+    ImGui::Text("Instanced (%d)", totalInvited);
     ImGui::Separator();
 
-    if (ImGui::BeginTable("In Wing", 2, flags)) {
+    if (ImGui::BeginTable("In Instance Confirmed", 2, flags)) {
+        std::string confirmedText = "Confirmed (" + std::to_string(_app.getCmdrInvitedConfirmed().size()) + ")";
         ImGui::TableSetupColumn("");
-        ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch);
+        ImGui::TableSetupColumn(confirmedText.c_str(), ImGuiTableColumnFlags_WidthStretch);
         ImGui::TableHeadersRow();
 
         uint32_t uid = 0;
-        const std::vector<std::string>& cmdrInvited = _app.getCmdrInvited();
+        const std::vector<std::string>& cmdrInvited = _app.getCmdrInvitedConfirmed();
 
         ImGui::PushFont(_fontEurocaps);
 
         for (const std::string& cmdr : cmdrInvited) {
-            ImGui::TableNextRow();
+            // Ensures height stay consistent regardless if edit buttons are displayed
+            const float rowHeight = ImGui::GetFrameHeight();
+
+            ImGui::TableNextRow(ImGuiTableRowFlags_None, rowHeight);
             ImGui::TableSetBgColor(ImGuiTableBgTarget_RowBg1, rowInvited);
 
             ImGui::TableNextColumn();
@@ -487,6 +499,7 @@ void GUI::showCommanderLists()
             }
 
             ImGui::TableNextColumn();
+            ImGui::AlignTextToFramePadding();
             ImGui::Text(cmdr.c_str());
         }
 
@@ -494,6 +507,72 @@ void GUI::showCommanderLists()
 
         ImGui::EndTable();
     }
+
+
+    if (ImGui::BeginTable("In Instance Unconfirmed", 2, flags)) {
+        std::string confirmedText = "Unconfirmed (" + std::to_string(_app.getCmdrInvitedUnconfirmed().size()) + ")";
+        ImGui::TableSetupColumn("");
+        ImGui::TableSetupColumn(confirmedText.c_str(), ImGuiTableColumnFlags_WidthStretch);
+        ImGui::TableHeadersRow();
+
+        uint32_t uid = 0;
+        const std::vector<std::string>& cmdrInvited = _app.getCmdrInvitedUnconfirmed();
+
+        ImGui::PushFont(_fontEurocaps);
+
+        for (const std::string& cmdr : cmdrInvited) {
+            // Ensures height stay consistent regardless if edit buttons are displayed
+            const float rowHeight = ImGui::GetFrameHeight();
+
+            ImGui::TableNextRow(ImGuiTableRowFlags_None, rowHeight);
+            ImGui::TableSetBgColor(ImGuiTableBgTarget_RowBg1, rowInvited);
+
+            ImGui::TableNextColumn();
+
+            if (_showEditButtons) {
+                ImGui::PushID(uid++);
+
+                if (ImGui::Button(ICON_MD_ARROW_BACK)) {
+                    _app.setCmdrStatusWaiting(cmdr);
+                }
+
+                if (ImGui::IsItemHovered()) {
+                    ImGui::PopFont();
+                    ImGui::SetTooltip("Manualy remove from the invited list");
+                    ImGui::PushFont(_fontEurocaps);
+                }
+
+                ImGui::SameLine();
+
+                ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(255, 0, 0, 125));
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(255, 50, 50, 200));
+                ImGui::PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(255, 0, 0, 255));
+
+                if (ImGui::Button(ICON_MD_DELETE)) {
+                    _app.removeCommander(cmdr);
+                }
+
+                if (ImGui::IsItemHovered()) {
+                    ImGui::PopFont();
+                    ImGui::SetTooltip("Remove from list");
+                    ImGui::PushFont(_fontEurocaps);
+                }
+
+                ImGui::PopStyleColor(3);
+
+                ImGui::PopID();
+            }
+
+            ImGui::TableNextColumn();
+            ImGui::AlignTextToFramePadding();
+            ImGui::Text(cmdr.c_str());
+        }
+
+        ImGui::PopFont();
+
+        ImGui::EndTable();
+    }
+
 
     ImGui::EndChild();
 }
