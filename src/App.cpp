@@ -342,6 +342,8 @@ void App::handleReceiveTextEvent(const std::string& journalEntry)
             }
         }
     }
+
+    refreshSortedLists();
 }
 
 
