@@ -41,6 +41,7 @@ public:
     void loadCommanderList(const std::filesystem::path& pathList);
     void appendCommanderList(const std::filesystem::path& pathList);
     void exportCommanderList(const std::filesystem::path& path);
+    bool wasEditedSinceLastSave() const { return _wasEdited; }
 
     void addCommander(std::string commanderName, bool refresh = true);
     void removeCommander(std::string commanderName);
@@ -86,6 +87,8 @@ private:
 
     JournalWatcher _journalWatcher;
     std::thread _watcherThread;
+
+    bool _wasEdited = false;
 
 #ifdef _WIN32
     HANDLE _hStop;

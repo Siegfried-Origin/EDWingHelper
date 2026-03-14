@@ -50,6 +50,7 @@ void App::loadCommanderList(const std::filesystem::path& pathList)
 {
     _cmdrList.clear();
     appendCommanderList(pathList);
+    _wasEdited = false;
 }
 
 
@@ -107,6 +108,8 @@ void App::addCommander(std::string commanderName, bool refresh)
         }
 
         _cmdrList.emplace(commanderName, status);
+
+        _wasEdited = true;
     }
 
     if (refresh) {
@@ -118,7 +121,8 @@ void App::addCommander(std::string commanderName, bool refresh)
 void App::removeCommander(std::string commanderName)
 {
     toCmdrName(commanderName);
-    _cmdrList.erase(commanderName);
+    const size_t elemRemoved = _cmdrList.erase(commanderName);
+    _wasEdited = elemRemoved > 0;
 
     refreshSortedLists();
 }
@@ -132,6 +136,8 @@ void App::exportCommanderList(const std::filesystem::path& path)
         out << it.first;
         out << std::endl;
     }
+
+    _wasEdited = false;
 }
 
 

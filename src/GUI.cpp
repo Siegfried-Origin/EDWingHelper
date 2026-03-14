@@ -88,7 +88,9 @@ void GUI::run()
         // Do not update this field when a close is requested, otherwise
         // it interferes with the event loop.
         if (!_mainWindow->closeRequested()) {
-            _mainWindow->allowClose(_app.getCmdrInvitedConfirmed().size() + _app.getCmdrInvitedUnconfirmed().size() == 0);
+            const bool hasCommandersInWing = _app.getCmdrInvitedConfirmed().size() + _app.getCmdrInvitedUnconfirmed().size() > 0;
+            const bool hasUnsavedEdits = _app.wasEditedSinceLastSave();
+            _mainWindow->allowClose(!hasCommandersInWing && !hasUnsavedEdits);
         }
 
         if (!_mainWindow->minimized()) {
@@ -588,14 +590,28 @@ void GUI::showConfirmationMessages()
         ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
         ImGui::OpenPopup("Confirm Exit");
 
+        const std::string wingingProgressStr =
+            "You currently have invited commanders.\n"
+            "Closing the application will cause you to lose the current winging progress.\n\n";
+
+        const std::string unsavedDocStr = "Your have unsaved commanders in the list.\n\n";
+
+        std::string messageStr;
+
+        if (_app.getCmdrInvitedConfirmed().size() + _app.getCmdrInvitedUnconfirmed().size() > 0) {
+            messageStr += wingingProgressStr;
+        }
+
+        if (_app.wasEditedSinceLastSave()) {
+            messageStr += unsavedDocStr;
+        }
+
+        messageStr += 
+            "This action cannot be undone.\n"
+            "Are you sure you want to exit the program ?\n\n";
+
         if (ImGui::BeginPopupModal("Confirm Exit", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-            ImGui::Text(
-                "You currently have invited commanders.\n"
-                "Closing the application will cause you to lose the current winging progress.\n"
-                "This action cannot be undone.\n"
-                "\n"
-                "Are you sure you want to exit the program ?\n"
-            );
+            ImGui::Text(messageStr.c_str());
 
             ImVec2 textSize = ImGui::CalcTextSize("Confirm Exit");
             float buttonWidth = textSize.x + ImGui::GetStyle().FramePadding.x * 2.0f;
