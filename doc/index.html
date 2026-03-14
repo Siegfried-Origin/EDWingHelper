@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ED Wing Helper</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu;
+            background: #0b0f18;
+            color: #e6e6e6;
+            line-height: 1.6;
+            font-size: 1.2em;
+        }
+
+        /* NAVBAR */
+
+        nav {
+            position: sticky;
+            top: 0;
+            background: #070a11;
+            padding: 16px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            border-bottom: 1px solid #1b2133;
+        }
+
+        nav a {
+            color: #e6e6e6;
+            text-decoration: none;
+            margin-left: 20px;
+            font-size: 14px;
+        }
+
+        nav a:hover {
+            color: #ff8c00;
+        }
+
+        .logo {
+            font-weight: 700;
+            color: #ff8c00;
+        }
+
+        /* HERO */
+
+        .hero {
+            text-align: center;
+            padding: 100px 20px 80px 20px;
+            /* max-width: 900px; */
+            width: 100%;
+            margin: auto;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .hero-video {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 120%;
+            height: auto;
+            min-height: 100%;
+            transform: translate(-50%, -50%);
+            z-index: -1;
+            object-fit: cover;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .hero h1 {
+            font-size: 52px;
+            color: #ff8c00;
+            margin-bottom: 20px;
+        }
+
+        .hero p {
+            font-size: 26px;
+            color: #b8c0d4;
+            max-width: 700px;
+            margin: auto;
+        }
+
+        .buttons {
+            margin-top: 35px;
+            scroll-margin-top: 64px;
+        }
+
+        .button {
+            display: inline-block;
+            background: #ff8c00;
+            color: black;
+            padding: 14px 26px;
+            margin: 10px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .button:hover {
+            background: #ffaa33;
+        }
+
+        .button.secondary {
+            background: #1b2133;
+            color: white;
+        }
+
+        .button.secondary:hover {
+            background: #2b3350;
+        }
+
+        /* CONTAINER */
+
+        .container {
+            width: 100%;
+            background-color: rgba(0, 0, 0, 0.45);
+        }
+
+        .container-content {
+            max-width: 1100px;
+            margin: auto;
+            padding: 40px 20px;
+        }
+
+        /* FEATURES */
+
+        #features {
+            scroll-margin-top: 64px;
+        }
+
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-top: 40px;
+            margin-bottom: 40px;
+        }
+
+        .feature {
+            background: #121827;
+            padding: 25px;
+            border-radius: 10px;
+            transition: transform .2s;
+        }
+
+        .feature:hover {
+            transform: translateY(-4px);
+        }
+
+        .feature h3 {
+            color: #ff8c00;
+            margin-bottom: 10px;
+        }
+
+        /* SCREENSHOT */
+
+        .screenshot {
+            margin-top: 40px;
+            margin-bottom: 40px;
+        }
+
+        .screenshot img {
+            text-align: center;
+            margin-top: 40px;
+            max-width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+        }
+
+        /* VIDEO */
+
+        #video {
+            margin-top: 40px;
+            margin-bottom: 40px;
+            scroll-margin-top: 64px;
+        }
+
+        #video .video-frame {
+            text-align: center;
+            margin-top: 40px;
+            width: 100%;
+        }
+
+        .video-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 1100px;   /* plus large que 720 */
+            margin: 40px auto;
+        }
+
+        .video-wrapper iframe {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            border-radius: 10px;
+        }
+
+        /* FOOTER */
+
+        footer {
+            background: #070a11;
+            padding: 40px;
+            text-align: center;
+            color: #888;
+            font-size: 14px;
+        }
+
+        /* SMALL SCREENS */
+
+        @media (max-width:700px) {
+
+            .hero h1 {
+                font-size: 36px;
+            }
+
+            .hero p {
+                font-size: 20px;
+            }
+
+        }
+    </style>
+
+</head>
+
+<body>
+    <nav>
+        <div class="logo">ED Wing Helper</div>
+
+        <div>
+            <a href="#features">Features</a>
+            <a href="#video">Video</a>
+            <a href="https://github.com/Siegfried-Origin/EDWingHelper/releases/latest">Download</a>
+            <a href="https://github.com/Siegfried-Origin/EDWingHelper">GitHub</a>
+        </div>
+
+    </nav>
+
+    <section class="hero">
+        <video class="hero-video" autoplay muted loop playsinline>
+            <source src="hero-bg.webm" type="video/webm">
+            Your browser does not support the video tag.
+        </video>
+
+        <h1>ED Wing Helper</h1>
+
+        <p>
+            A simple tool to organize large player gatherings in
+            <b>Elite Dangerous</b> by automating wing invitation tracking.
+        </p>
+
+        <div class="buttons" id="download">
+
+            <a class="button" href="https://github.com/Siegfried-Origin/EDWingHelper/releases/latest">
+                Download Latest Release
+            </a>
+
+            <a class="button secondary" href="https://github.com/Siegfried-Origin/EDWingHelper">
+                View on GitHub
+            </a>
+
+        </div>
+
+    </section>
+
+    <section class="container">
+        <div class="container-content">
+            <h2 id="features">Why ED Wing Helper?</h2>
+
+            <p style="margin-top:15px;color:#b8c0d4;">
+                Creating large instances in Elite Dangerous requires inviting
+                commanders three at a time and tracking who has already joined.
+                ED Wing Helper automates this tracking process so the wing leader can focus
+                on organizing the event instead of managing lists manually.
+            </p>
+
+            <div class="feature-list">
+                <div class="feature">
+                    <h3>Commander Lists</h3>
+                    Import a simple text file containing commander names.
+                    One name per line is all you need.
+                </div>
+
+                <div class="feature">
+                    <h3>Journal Monitoring</h3>
+                    Automatically reads Elite Dangerous journals to detect
+                    friend activity and wing invites.
+                </div>
+
+                <div class="feature">
+                    <h3>Online Tracking</h3>
+                    Commanders are automatically sorted depending
+                    on whether they are online or offline.
+                </div>
+
+                <div class="feature">
+                    <h3>Invitation Tracking</h3>
+                    Accepted wing invites are automatically moved
+                    to the invited list.
+                </div>
+
+                <div class="feature">
+                    <h3>Disconnect Detection</h3>
+                    If an invited commander disconnects,
+                    they are moved back to the invite list.
+                </div>
+
+                <div class="feature">
+                    <h3>List Management</h3>
+                    Append, edit, and export commander lists easily.
+                </div>
+            </div>
+
+            <div id="video">
+                <h2>Presentation video</h2>
+
+                <div class="video-wrapper">
+                    <iframe
+                        src="https://www.youtube.com/embed/mwUawYZSdxg"
+                        title="YouTube video player"
+                        frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen>
+                    </iframe>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>
+            ED Wing Helper is an open-source project and is not affiliated
+            with Frontier Developments.
+        </p>
+
+        <p style="margin-top:10px;">
+            Fly safe, Commander o7
+        </p>
+    </footer>
+</body>
+
+</html>
