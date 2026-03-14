@@ -330,9 +330,11 @@ void App::handleReceiveTextEvent(const std::string& journalEntry)
                 case Status::NeedsInvite_Online:
                 case Status::AlreadyWingedActive:
                 case Status::AlreadyWingedUnconfirmed:
+                // Even offline can be detected in instance in case they are not in
+                // the commander friend list
+                case Status::NeedsInvite_Offline:
                     it->second = { Status::AlreadyWingedActive, false };
                     break;
-                case Status::NeedsInvite_Offline:
                 case Status::N_STATUS:
                     // That shall not happen
                     assert(0);
