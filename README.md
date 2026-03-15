@@ -1,3 +1,5 @@
+![banner](https://repository-images.githubusercontent.com/1178061612/33a3cdaf-9e38-4899-910d-f5b091d3111e)
+
 # ED Wing Helper
 
 Small utility to help create a shared instance in Elite Dangerous by managing wing invitations from a predefined commander list.
