@@ -8,7 +8,14 @@ The tool monitors the game journal to detect when commanders are online and when
 
 ⚠️ This project is currently in a very early stage and largely untested. Expect bugs.
 
+## Overview
+
+### Presentation video
+[![Presentation video](https://img.youtube.com/vi/mwUawYZSdxg/0.jpg)](https://www.youtube.com/watch?v=mwUawYZSdxg)
+
+### Main interface
 ![screenshot](https://github.com/user-attachments/assets/7c424738-fae6-4e30-aaac-f2ef1b2af3bb)
+
 ## How it works
 
 1. Prepare a text file containing commander names (one name per line).
