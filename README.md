@@ -1,5 +1,3 @@
-![banner](https://repository-images.githubusercontent.com/1178061612/33a3cdaf-9e38-4899-910d-f5b091d3111e)
-
 # ED Wing Helper
 
 Small utility to help create a shared instance in Elite Dangerous by managing wing invitations from a predefined commander list.
@@ -27,13 +25,18 @@ The tool monitors the game journal to detect when commanders are online and when
 
 Commanders are automatically categorized in the UI:
 
-- **Online – waiting for invite**
-- **Offline – waiting for invite**
-- **Already invited**
+- **Need Invite**
+  - Online (waiting your wing invite)
+  - Offline
+- **Instanced**
+   - Confirmed (they were dected in the local chat)
+   - Unconfirmed (they've accepted your wing request)
 
-If a commander who was already invited **goes offline**, they are automatically removed from the *Already invited* section.
-If a commander accepts your friend request while you're building the instance, it's status will be updated.
-
+The program automatically move commanders between sections:
+- If a commander who was already invited **goes offline**, they are automatically removed from the *Instanced* section. However, sometimes, the journal does not report Offline events or the even may be delayed.
+- If a commander accepts your friend request while you're building the instance, its status will be updated.
+- If a commander of your list speaks in the local chat channel, they are moved to the *Instanced* section: you don't need to invite them, they're already in the instance
+- If a commander have joined your wing and speaks in the local chat channel, they are moved from *Unconfirmed* to *Confirmed*. This helps you sort between commander that have left your wing but did not successfully joined your instance.
 
 ## Requirements
 
