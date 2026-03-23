@@ -51,7 +51,7 @@ int main(int argc, char* argv[])
 
     // Write log in case of crash
     if (writeCrashLog) {
-        std::ofstream out("EDVoiceCrash.log", std::ios::app);
+        std::ofstream out("EDWingHelperCrash.log", std::ios::app);
         out << local.str();
         out.close();
     }
