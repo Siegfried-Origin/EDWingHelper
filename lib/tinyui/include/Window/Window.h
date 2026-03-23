@@ -22,6 +22,8 @@
 #endif
 
 
+typedef void (*openedFile)(void* userdata, std::string filepath);
+
 
 class Window
 {
@@ -52,6 +54,20 @@ public:
     bool minimized() const { return _minimized; }
     float mainScale() const { return _mainScale; }
     const char* title() const;
+
+    void openFileDialog(
+        const std::string& title,
+        const std::vector<std::pair<std::string, std::string>> filters,
+        void* userData,
+        openedFile callback
+    ) const;
+
+    void saveFileDialog(
+        const std::string& title,
+        const std::vector<std::pair<std::string, std::string>> filters,
+        void* userData,
+        openedFile callback
+    ) const;
 
 #ifdef USE_VULKAN
     void createVkSurfaceKHR(
@@ -94,10 +110,32 @@ protected:
 
 #ifdef USE_SDL
     virtual void sdlWndProc(SDL_Event& event);
+
+    struct OpenFileCbData {
+        void* userdata;
+        openedFile callback;
+    };
+
+    static void SDLCALL sdlCallbackOpenSaveFile(void* userdata, const char* const* filelist, int filter);
+
     SDL_Window* _sdlWindow;
 #else
     static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
     virtual LRESULT w32WndProc(UINT msg, WPARAM wParam, LPARAM lParam);
+
+    std::string w32OpenFileName(
+        const char* title,
+        const char* initialDir,
+        const char* filter,
+        bool multiSelect
+    ) const;
+    
+    std::string w32SaveFileName(
+        const char* title,
+        const char* initialDir,
+        const char* filter,
+        bool multiSelect
+    ) const;
 
     HWND _hwnd;
     std::wstring _className;

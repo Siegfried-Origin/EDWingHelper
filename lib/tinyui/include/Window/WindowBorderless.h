@@ -2,7 +2,6 @@
 
 #include <Window/Window.h>
 
-typedef void (*openedFile)(void* userdata, std::string filepath);
 
 class WindowBorderless : public Window
 {
@@ -24,10 +23,6 @@ public:
     float windowButtonWidth() const { return _buttonWidth; }
     bool borderless() const { return _borderless; }
 
-    void openVoicePackFileDialog(void* userdata, openedFile callback);
-    void openCommanderListFileDialog(void* userdata, openedFile callback);
-    void saveCommanderListFileDialog(void* userdata, openedFile callback);
-
 protected:
     float _titlebarHeight = 32.f;
     float _buttonWidth = 55.f;
@@ -36,13 +31,6 @@ protected:
 
 #ifdef USE_SDL
     static SDL_HitTestResult SDLCALL sdlHitTest(SDL_Window* win, const SDL_Point* area, void* data);
-
-    struct OpenFileCbData {
-        void* userdata;
-        openedFile callback;
-    };
-
-    static void SDLCALL sdlCallbackOpenFile(void* userdata, const char* const* filelist, int filter);
 
     bool _isMaximized = false;
 #else
@@ -58,7 +46,5 @@ protected:
     bool w32IsMaximized();
     void w32AdjustMaximizedClientRect(RECT& rect);
     LRESULT w32HitTest(POINT cursor) const;
-    std::string w32OpenFileName(const char* title, const char* initialDir, const char* filter, bool multiSelect);
-    std::string w32SaveFileName(const char* title, const char* initialDir, const char* filter, bool multiSelect);
 #endif
 };

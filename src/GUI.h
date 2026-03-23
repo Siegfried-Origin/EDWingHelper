@@ -28,6 +28,10 @@ private:
     void showCommanderLists();
     void showConfirmationMessages();
 
+    void openNewCommanderListDialog();
+    void appendCommanderListDialog();
+    void saveCommanderListDialog();
+
     static void loadCommanderList(void* userdata, std::string path);
     static void appendCommanderList(void* userdata, std::string path);
     static void exportCommanderList(void* userdata, std::string path);

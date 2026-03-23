@@ -70,100 +70,6 @@ void WindowBorderless::maximizeRestoreWindow()
 }
 
 
-void WindowBorderless::openVoicePackFileDialog(void* userdata, openedFile callback)
-{
-#ifdef USE_SDL
-    const SDL_DialogFileFilter filters[] = {
-        { "JSON file",  "json" }
-    };
-
-    // TODO: Ugly but whatever... it is deleted by the callback
-    OpenFileCbData* callbackData = new OpenFileCbData;
-    callbackData->callback = callback;
-    callbackData->userdata = userdata;
-
-    SDL_ShowOpenFileDialog(
-        sdlCallbackOpenFile,
-        callbackData,
-        _sdlWindow,
-        filters, 1,
-        NULL,
-        false);
-#else
-    const std::string newVoicePack = w32OpenFileName(
-        "Select voicepack file",
-        "",
-        "JSON file\0*.json\0",
-        false);
-
-    callback(userdata, newVoicePack);
-#endif
-}
-
-
-void WindowBorderless::openCommanderListFileDialog(void* userdata, openedFile callback)
-{
-#ifdef USE_SDL
-    const SDL_DialogFileFilter filters[] = {
-        { "Text file",  "txt" },
-        { "CSV file",   "csv" }
-    };
-
-    // TODO: Ugly but whatever... it is deleted by the callback
-    OpenFileCbData* callbackData = new OpenFileCbData;
-    callbackData->callback = callback;
-    callbackData->userdata = userdata;
-
-    SDL_ShowOpenFileDialog(
-        sdlCallbackOpenFile,
-        callbackData,
-        _sdlWindow,
-        filters, 1,
-        NULL,
-        false);
-#else
-    const std::string newVoicePack = w32OpenFileName(
-        "Select voicepack file",
-        "",
-        "Text files\0*.txt\0CSV files\0*.csv\0",
-        false);
-
-    callback(userdata, newVoicePack);
-#endif
-}
-
-
-void WindowBorderless::saveCommanderListFileDialog(void* userdata, openedFile callback)
-{
-
-#ifdef USE_SDL
-    const SDL_DialogFileFilter filters[] = {
-        { "Text file",  "txt" }
-    };
-
-    // TODO: Ugly but whatever... it is deleted by the callback
-    OpenFileCbData* callbackData = new OpenFileCbData;
-    callbackData->callback = callback;
-    callbackData->userdata = userdata;
-
-    SDL_ShowSaveFileDialog(
-        sdlCallbackOpenFile,
-        callbackData,
-        _sdlWindow,
-        filters, 1,
-        NULL);
-#else
-    const std::string newVoicePack = w32SaveFileName(
-        "Save commander list",
-        "",
-        "Text files\0*.txt\0",
-        false);
-
-    callback(userdata, newVoicePack);
-#endif
-}
-
-
 // ----------------------------------------------------------------------------
 // Platform specific mess
 // ----------------------------------------------------------------------------
@@ -220,32 +126,6 @@ SDL_HitTestResult SDLCALL WindowBorderless::sdlHitTest(SDL_Window* win, const SD
         default:                return SDL_HITTEST_NORMAL;
     }
 }
-
-
-void SDLCALL WindowBorderless::sdlCallbackOpenFile(void* userdata, const char* const* filelist, int filter)
-{
-    OpenFileCbData* obj = (OpenFileCbData*)userdata;
-
-    if (!filelist) {
-        SDL_Log("An error occured: %s", SDL_GetError());
-    }
-    else if (!*filelist) {
-        SDL_Log("The user did not select any file.");
-        SDL_Log("Most likely, the dialog was canceled.");
-    }
-    else {
-        while (*filelist) {
-            const std::string newVoicePack = *filelist;
-
-            obj->callback(obj->userdata, newVoicePack);
-
-            filelist++;
-        }
-    }
-
-    delete obj;
-}
-
 
 #else
 
@@ -428,56 +308,5 @@ LRESULT WindowBorderless::w32HitTest(POINT cursor) const
     }
 }
 
-
-std::string WindowBorderless::w32OpenFileName(const char* title, const char* initialDir, const char* filter, bool multiSelect)
-{
-    OPENFILENAMEA ofn = { 0 };
-    char fileBuffer[MAX_PATH * 4] = { 0 };
-
-    ofn.lStructSize = sizeof(ofn);
-    ofn.hwndOwner = _hwnd;
-    ofn.lpstrTitle = title;
-    ofn.lpstrInitialDir = initialDir;
-    ofn.lpstrFilter = filter;
-    ofn.nFilterIndex = 1;
-    ofn.lpstrFile = fileBuffer;
-    ofn.nMaxFile = sizeof(fileBuffer);
-    ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
-
-    if (multiSelect) {
-        ofn.Flags |= OFN_ALLOWMULTISELECT;
-    }
-
-    if (GetOpenFileNameA(&ofn)) {
-        return std::string(fileBuffer);
-    }
-    return {};
-}
-
-
-std::string WindowBorderless::w32SaveFileName(const char* title, const char* initialDir, const char* filter, bool multiSelect)
-{
-    OPENFILENAMEA ofn = { 0 };
-    char fileBuffer[MAX_PATH * 4] = { 0 };
-
-    ofn.lStructSize = sizeof(ofn);
-    ofn.hwndOwner = _hwnd;
-    ofn.lpstrTitle = title;
-    ofn.lpstrInitialDir = initialDir;
-    ofn.lpstrFilter = filter;
-    ofn.nFilterIndex = 1;
-    ofn.lpstrFile = fileBuffer;
-    ofn.nMaxFile = sizeof(fileBuffer);
-    ofn.Flags = OFN_PATHMUSTEXIST | OFN_OVERWRITEPROMPT;
-
-    if (multiSelect) {
-        ofn.Flags |= OFN_ALLOWMULTISELECT;
-    }
-
-    if (GetSaveFileNameA(&ofn)) {
-        return std::string(fileBuffer);
-    }
-    return {};
-}
 
 #endif

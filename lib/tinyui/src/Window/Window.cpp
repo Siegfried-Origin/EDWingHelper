@@ -270,6 +270,125 @@ const char* Window::title() const
 }
 
 
+void Window::openFileDialog(
+    const std::string& title,
+    const std::vector<std::pair<std::string, std::string>> filters,
+    void* userData,
+    openedFile callback) const
+{
+#ifdef USE_SDL
+    std::vector<SDL_DialogFileFilter> sdlFilters(filters.size());
+
+    for (size_t i = 0; i < filters.size(); i++) {
+        sdlFilters[i].name    = filters[i].first.c_str();
+        sdlFilters[i].pattern = filters[i].second.c_str();
+    }
+
+    // This MUST be deleted in `sdlCallbackOpenSaveFile` callback
+    OpenFileCbData* callbackData = new OpenFileCbData;
+    callbackData->callback = callback;
+    callbackData->userdata = userData;
+
+    SDL_ShowOpenFileDialog(
+        sdlCallbackOpenSaveFile,
+        callbackData,
+        _sdlWindow,
+        sdlFilters.data(), sdlFilters.size(),
+        NULL,
+        false
+    );
+#else
+    std::vector<char> w32Filters;
+
+    for (size_t i = 0; i < filters.size(); i++) {
+        size_t offset = w32Filters.size();
+
+        w32Filters.resize(w32Filters.size() + filters[i].first.size() + 1);
+        memcpy(&w32Filters[offset], filters[i].first.data(), filters[i].first.size());
+        w32Filters.back() = '\0';
+
+        offset = w32Filters.size();
+
+        w32Filters.resize(w32Filters.size() + 2 + filters[i].second.size() + 1);
+        w32Filters[offset + 0] = '*';
+        w32Filters[offset + 1] = '.';
+        memcpy(&w32Filters[offset + 2], filters[i].second.data(), filters[i].second.size());
+        w32Filters.back() = '\0';
+    }
+
+    w32Filters.resize(w32Filters.size() + 1);
+    w32Filters.back() = '\0';
+
+    const std::string newVoicePack = w32OpenFileName(
+        title.c_str(),
+        "",
+        w32Filters.data(),
+        false);
+
+    callback(userData, newVoicePack);
+#endif
+}
+
+
+void Window::saveFileDialog(
+    const std::string& title,
+    const std::vector<std::pair<std::string, std::string>> filters,
+    void* userData,
+    openedFile callback) const
+{
+#ifdef USE_SDL
+    std::vector<SDL_DialogFileFilter> sdlFilters(filters.size());
+
+    for (size_t i = 0; i < filters.size(); i++) {
+        sdlFilters[i].name = filters[i].first.c_str();
+        sdlFilters[i].pattern = filters[i].second.c_str();
+    }
+
+    // This MUST be deleted in `sdlCallbackOpenSaveFile` callback
+    OpenFileCbData* callbackData = new OpenFileCbData;
+    callbackData->callback = callback;
+    callbackData->userdata = userData;
+
+    SDL_ShowSaveFileDialog(
+        sdlCallbackOpenSaveFile,
+        callbackData,
+        _sdlWindow,
+        sdlFilters.data(), sdlFilters.size(),
+        NULL
+    );
+#else
+    std::vector<char> w32Filters;
+
+    for (size_t i = 0; i < filters.size(); i++) {
+        size_t offset = w32Filters.size();
+
+        w32Filters.resize(w32Filters.size() + filters[i].first.size() + 1);
+        memcpy(&w32Filters[offset], filters[i].first.data(), filters[i].first.size());
+        w32Filters.back() = '\0';
+
+        offset = w32Filters.size();
+
+        w32Filters.resize(w32Filters.size() + 2 + filters[i].second.size() + 1);
+        w32Filters[offset + 0] = '*';
+        w32Filters[offset + 1] = '.';
+        memcpy(&w32Filters[offset + 2], filters[i].second.data(), filters[i].second.size());
+        w32Filters.back() = '\0';
+    }
+
+    w32Filters.resize(w32Filters.size() + 1);
+    w32Filters.back() = '\0';
+
+    const std::string newVoicePack = w32SaveFileName(
+        title.c_str(),
+        "",
+        w32Filters.data(),
+        false);
+
+    callback(userData, newVoicePack);
+#endif
+}
+
+
 #ifdef USE_VULKAN
 void Window::createVkSurfaceKHR(
     VkInstance instance,
@@ -364,34 +483,62 @@ void Window::sdlWndProc(SDL_Event& event)
     ImGui_ImplSDL3_ProcessEvent(&event);
 
     switch (event.type) {
-    case SDL_EVENT_QUIT:
-    case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
-        _closeRequested = true;
+        case SDL_EVENT_QUIT:
+        case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
+            _closeRequested = true;
 
-        if (event.window.windowID == SDL_GetWindowID(_sdlWindow) && _allowClose) {
-            _closed = true;
+            if (event.window.windowID == SDL_GetWindowID(_sdlWindow) && _allowClose) {
+                _closed = true;
+            }
+            break;
+
+        case SDL_EVENT_WINDOW_RESIZED:
+        {
+            int width, height;
+            SDL_GetWindowSizeInPixels(_sdlWindow, &width, &height);
+            onResize(width, height);
         }
         break;
 
-    case SDL_EVENT_WINDOW_RESIZED:
-    {
-        int width, height;
-        SDL_GetWindowSizeInPixels(_sdlWindow, &width, &height);
-        onResize(width, height);
-    }
-    break;
-
-    case SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED:
-    {
-        _mainScale = SDL_GetWindowDisplayScale(_sdlWindow);
-        int width, height;
-        SDL_GetWindowSizeInPixels(_sdlWindow, &width, &height);
-        onResize(width, height);
-    }
-    break;
-    default:
+        case SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED:
+        {
+            _mainScale = SDL_GetWindowDisplayScale(_sdlWindow);
+            int width, height;
+            SDL_GetWindowSizeInPixels(_sdlWindow, &width, &height);
+            onResize(width, height);
+        }
         break;
+        default:
+            break;
     }
+}
+
+
+void SDLCALL Window::sdlCallbackOpenSaveFile(
+    void* userdata,
+    const char* const* filelist,
+    int filter)
+{
+    OpenFileCbData* obj = (OpenFileCbData*)userdata;
+
+    if (!filelist) {
+        SDL_Log("An error occured: %s", SDL_GetError());
+    }
+    else if (!*filelist) {
+        SDL_Log("The user did not select any file.");
+        SDL_Log("Most likely, the dialog was canceled.");
+    }
+    else {
+        while (*filelist) {
+            const std::string newVoicePack = *filelist;
+
+            obj->callback(obj->userdata, newVoicePack);
+
+            filelist++;
+        }
+    }
+
+    delete obj;
 }
 
 #else
@@ -462,6 +609,66 @@ LRESULT CALLBACK Window::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPar
 LRESULT Window::w32WndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 {
     return ::DefWindowProcW(_hwnd, msg, wParam, lParam);
+}
+
+
+std::string Window::w32OpenFileName(
+    const char* title,
+    const char* initialDir,
+    const char* filter,
+    bool multiSelect) const
+{
+    OPENFILENAMEA ofn = { 0 };
+    char fileBuffer[MAX_PATH * 4] = { 0 };
+
+    ofn.lStructSize = sizeof(ofn);
+    ofn.hwndOwner = _hwnd;
+    ofn.lpstrTitle = title;
+    ofn.lpstrInitialDir = initialDir;
+    ofn.lpstrFilter = filter;
+    ofn.nFilterIndex = 1;
+    ofn.lpstrFile = fileBuffer;
+    ofn.nMaxFile = sizeof(fileBuffer);
+    ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+
+    if (multiSelect) {
+        ofn.Flags |= OFN_ALLOWMULTISELECT;
+    }
+
+    if (GetOpenFileNameA(&ofn)) {
+        return std::string(fileBuffer);
+    }
+    return {};
+}
+
+
+std::string Window::w32SaveFileName(
+    const char* title,
+    const char* initialDir,
+    const char* filter,
+    bool multiSelect) const
+{
+    OPENFILENAMEA ofn = { 0 };
+    char fileBuffer[MAX_PATH * 4] = { 0 };
+
+    ofn.lStructSize = sizeof(ofn);
+    ofn.hwndOwner = _hwnd;
+    ofn.lpstrTitle = title;
+    ofn.lpstrInitialDir = initialDir;
+    ofn.lpstrFilter = filter;
+    ofn.nFilterIndex = 1;
+    ofn.lpstrFile = fileBuffer;
+    ofn.nMaxFile = sizeof(fileBuffer);
+    ofn.Flags = OFN_PATHMUSTEXIST | OFN_OVERWRITEPROMPT;
+
+    if (multiSelect) {
+        ofn.Flags |= OFN_ALLOWMULTISELECT;
+    }
+
+    if (GetSaveFileNameA(&ofn)) {
+        return std::string(fileBuffer);
+    }
+    return {};
 }
 
 

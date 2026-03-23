@@ -114,7 +114,7 @@ void GUI::run()
                 ImGui::SetCursorPosY((avail.y - buttonHeight) * 0.5f);
 
                 if (ImGui::Button(importListText)) {
-                    _mainWindow->openCommanderListFileDialog(this, GUI::loadCommanderList);
+                    openNewCommanderListDialog();
                 }
             }
             else {
@@ -228,15 +228,15 @@ void GUI::menuBar()
 
     // TODO: currently shortcuts are not relable so deactivated
     if (ImGui::Shortcut(ImGuiMod_Ctrl | ImGuiKey_O, ImGuiInputFlags_RouteGlobal)) {
-        _mainWindow->openCommanderListFileDialog(this, GUI::loadCommanderList);
+        openNewCommanderListDialog();
     }
 
     if (ImGui::Shortcut(ImGuiMod_Shift | ImGuiMod_Ctrl | ImGuiKey_O, ImGuiInputFlags_RouteGlobal)) {
-        _mainWindow->openCommanderListFileDialog(this, GUI::appendCommanderList);
+        appendCommanderListDialog();
     }
 
     if (allowSave && ImGui::Shortcut(ImGuiMod_Ctrl | ImGuiKey_S, ImGuiInputFlags_RouteGlobal)) {
-        _mainWindow->saveCommanderListFileDialog(this, GUI::exportCommanderList);
+        saveCommanderListDialog();
     }
 
     if (ImGui::Shortcut(ImGuiMod_Ctrl | ImGuiKey_N, ImGuiInputFlags_RouteGlobal)) {
@@ -246,17 +246,17 @@ void GUI::menuBar()
     if (ImGui::BeginMenuBar()) {
         if (ImGui::BeginMenu("File")) {
             if (ImGui::MenuItem("Open new commander list...")) {
-                _mainWindow->openCommanderListFileDialog(this, GUI::loadCommanderList);
+                openNewCommanderListDialog();
             }
 
             if (ImGui::MenuItem("Append commander list...")) {
-                _mainWindow->openCommanderListFileDialog(this, GUI::appendCommanderList);
+                appendCommanderListDialog();
             }
 
             ImGui::Separator();
 
             if (ImGui::MenuItem("Export commander list...", NULL, false, allowSave)) {
-                _mainWindow->saveCommanderListFileDialog(this, GUI::exportCommanderList);
+                saveCommanderListDialog();
             }
 
             ImGui::EndMenu();
@@ -704,6 +704,43 @@ void GUI::showConfirmationMessages()
     }
 }
 
+
+void GUI::openNewCommanderListDialog()
+{
+    _mainWindow->openFileDialog(
+        "Open new commander list",
+        {
+            { "Text file",  "txt" },
+            { "CSV file",   "csv" }
+        },
+        this, GUI::loadCommanderList
+    );
+}
+
+
+void GUI::appendCommanderListDialog()
+{
+    _mainWindow->openFileDialog(
+        "Append commander list",
+        {
+            { "Text file",  "txt" },
+            { "CSV file",   "csv" }
+        },
+        this, GUI::appendCommanderList
+    );
+}
+
+
+void GUI::saveCommanderListDialog()
+{
+    _mainWindow->saveFileDialog(
+        "Save commander list",
+        {
+            { "Text file",  "txt" }
+        },
+        this, GUI::exportCommanderList
+    );
+}
 
 
 void GUI::loadCommanderList(void* userdata, std::string path)
