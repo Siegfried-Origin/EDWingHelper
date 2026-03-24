@@ -1,4 +1,5 @@
 #include "GUI.h"
+#include "util/EliteFileUtil.h"
 
 #include <Window/WindowSystem.h>
 
@@ -26,7 +27,8 @@ int WINAPI wWinMain(
 int main(int argc, char* argv[])
 {
 #endif
-    const std::filesystem::path execPath = std::filesystem::path(argv[0]).parent_path();
+    const std::filesystem::path configPath = EliteFileUtil::getConfigPath("EDWingHelper");
+    std::filesystem::create_directories(configPath);
 
     // Keep logs
     std::ostringstream local;
@@ -41,7 +43,7 @@ int main(int argc, char* argv[])
 #else
         WindowSystem windowSystem(hInstance, nShowCmd);
 #endif
-        GUI gui(execPath, &windowSystem);
+        GUI gui(configPath, &windowSystem);
         gui.run();
     }
     catch (const std::exception& e) {

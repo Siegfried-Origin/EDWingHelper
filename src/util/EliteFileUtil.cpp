@@ -99,3 +99,32 @@ std::filesystem::path EliteFileUtil::resolvePath(
 {
     return file.is_absolute() ? file : (basePath / file);
 }
+
+
+std::filesystem::path EliteFileUtil::getConfigPath(const std::string& appName)
+{
+#ifdef _WIN32
+    PWSTR path = nullptr;
+
+    if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_RoamingAppData, 0, NULL, &path)))
+    {
+        std::filesystem::path result = path;
+        CoTaskMemFree(path);
+        return result / appName;
+    }
+
+    return ".";
+#else
+    const char* xdg = std::getenv("XDG_CONFIG_HOME");
+
+    if (xdg && *xdg)
+        return std::filesystem::path(xdg) / appName;
+
+    const char* home = std::getenv("HOME");
+
+    if (home)
+        return std::filesystem::path(home) / ".config" / appName;
+
+    return ".";
+#endif
+}

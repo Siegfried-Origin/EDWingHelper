@@ -34,7 +34,7 @@ public:
 
 
 
-    App(const std::filesystem::path& execPath);
+    App(const std::filesystem::path& config);
 
     ~App();
 

@@ -8,7 +8,7 @@
 #include <json.hpp>
 
 
-App::App(const std::filesystem::path& execPath)
+App::App(const std::filesystem::path& config)
     : _journalWatcher(EliteFileUtil::getLatestJournal(EliteFileUtil::getUserProfile()))
 {
     _journalWatcher.addListener(this);

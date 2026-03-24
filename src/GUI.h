@@ -11,7 +11,7 @@ class GUI
 {
 public:
     GUI(
-        const std::filesystem::path& execPath,
+        const std::filesystem::path& config,
         WindowSystem* pWindowSystem
     );
 

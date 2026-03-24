@@ -20,4 +20,6 @@ struct EliteFileUtil
     static std::filesystem::path resolvePath(
         const std::filesystem::path& basePath,
         const std::filesystem::path& file);
+
+    static std::filesystem::path getConfigPath(const std::string& appName);
 };

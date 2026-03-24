@@ -10,15 +10,15 @@
 
 
 GUI::GUI(
-    const std::filesystem::path& execPath,
+    const std::filesystem::path& config,
     WindowSystem* pWindowSystem)
-    : _app(execPath)
+    : _app(config)
     , _pWindowSystem(pWindowSystem)
 {
     _mainWindow = new WindowBorderless(
         _pWindowSystem,
         "ED Wing Helper",
-        execPath / "imgui.ini",
+        config / "mainwindow.ini",
         1024, 768
     );
 
