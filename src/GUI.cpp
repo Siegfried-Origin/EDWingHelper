@@ -259,6 +259,12 @@ void GUI::menuBar()
                 saveCommanderListDialog();
             }
 
+            ImGui::Separator();
+
+            if (ImGui::MenuItem("Exit", "Alt+F4")) {
+                _mainWindow->closeWindow();
+            }
+
             ImGui::EndMenu();
         }
 
