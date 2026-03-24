@@ -24,7 +24,6 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 configure_file(cmake/config.h.in config.h @ONLY)
 
 # Build
-add_subdirectory(3rdparty)
 add_subdirectory(lib)
 add_subdirectory(src)
 

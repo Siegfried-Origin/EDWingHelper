@@ -1,6 +1,3 @@
-[submodule "3rdparty/imgui/imgui"]
-	path = 3rdparty/imgui/imgui
-	url = https://github.com/ocornut/imgui.git
-[submodule "3rdparty/SDL"]
-	path = 3rdparty/SDL
-	url = https://github.com/libsdl-org/SDL.git
+[submodule "lib/tinyui"]
+	path = lib/tinyui
+	url = https://github.com/Siegfried-Origin/tinyui.git
