@@ -81,6 +81,6 @@ void JournalWatcher::forcedUpdate() {
     // in case the file was not flushed to the disk.
     while (!_stopForceUpdate) {
         std::wifstream file(_currJournalPath, std::ios::in | std::ios::binary);
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
 }
