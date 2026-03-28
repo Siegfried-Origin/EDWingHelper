@@ -4,6 +4,7 @@
 
 #include <Window/WindowSystem.h>
 #include <Window/WindowBorderless.h>
+#include <Window/WindowOverlay.h>
 
 #include <filesystem>
 
@@ -23,6 +24,18 @@ private:
     void beginMainWindow();
     void endMainWindow();
 
+    void displayToInviteList(
+        const char* title_name,
+        const std::vector<std::string>& list,
+        const ImU32& bgColor
+    );
+
+    void displayInstancedList(
+        const char* title_name,
+        const std::vector<std::string>& list,
+        const ImU32& bgColor
+    );
+
     void menuBar();
 
     void showCommanderLists();
@@ -40,6 +53,7 @@ private:
     App _app;
     WindowSystem* _pWindowSystem = nullptr;
     WindowBorderless* _mainWindow = nullptr;
+    WindowOverlay* _overlayWindow = nullptr;
 
     ImFont* _fontEurocaps = nullptr;
     ImFont* _fontEurostile = nullptr;
