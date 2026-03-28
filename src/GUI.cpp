@@ -22,6 +22,8 @@ GUI::GUI(
         1024, 768
     );
 
+    ImGui::SetCurrentContext(_mainWindow->getImGuiContext());
+
     ImGuiIO& io = ImGui::GetIO();
     ImGuiStyle& style = ImGui::GetStyle();
 
@@ -82,7 +84,21 @@ GUI::~GUI()
 
 void GUI::run()
 {
+    const float target_ms = 16.6f;
+    auto lastTime = std::chrono::high_resolution_clock::now();
+
     while (!_mainWindow->closed()) {
+        const auto now = std::chrono::high_resolution_clock::now();
+        const float delta_ms = std::chrono::duration<float, std::milli>(now - lastTime).count();
+
+        // Wait if last frame was rendered early to lower GPU utilization
+        if (delta_ms < target_ms) {
+            std::this_thread::sleep_for(std::chrono::milliseconds((int)(target_ms - delta_ms)));
+            continue;
+        }
+
+        lastTime = now;
+
         // Force confirmation in case commander were winged:
         // we cannot recover this list after closing
         // Do not update this field when a close is requested, otherwise
