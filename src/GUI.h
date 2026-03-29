@@ -21,25 +21,34 @@ public:
     void run();
 
 private:
+    void showMainWindowContent();
+#ifdef BUILD_OVERLAY
+    void showOverlayContent();
+#endif
+
     void beginMainWindow();
     void endMainWindow();
 
-    void displayToInviteList(
-        const char* title_name,
-        const std::vector<std::string>& list,
-        const ImU32& bgColor
-    );
-
-    void displayInstancedList(
-        const char* title_name,
-        const std::vector<std::string>& list,
-        const ImU32& bgColor
-    );
-
     void menuBar();
+    
+    void showCommanderLists(ImFont* font);
 
-    void showCommanderLists();
+    void showToInviteList(
+        const char* title_name,
+        const std::vector<std::string>& list,
+        const ImU32& bgColor,
+        ImFont* font
+    );
+
+    void showInstancedList(
+        const char* title_name,
+        const std::vector<std::string>& list,
+        const ImU32& bgColor,
+        ImFont* font
+    );
+
     void showConfirmationMessages();
+
 
     void openNewCommanderListDialog();
     void appendCommanderListDialog();
@@ -52,11 +61,16 @@ private:
 private:
     App _app;
     WindowSystem* _pWindowSystem = nullptr;
-    WindowBorderless* _mainWindow = nullptr;
-    WindowOverlay* _overlayWindow = nullptr;
 
-    ImFont* _fontEurocaps = nullptr;
-    ImFont* _fontEurostile = nullptr;
+    WindowBorderless* _mainWindow = nullptr;
+    ImFont* _fontMainWindowEurocaps = nullptr;
+    ImFont* _fontMainWindowEurostile = nullptr;
+
+#ifdef BUILD_OVERLAY
+    WindowOverlay* _overlayWindow = nullptr;
+    ImFont* _fontOverlayEurocaps = nullptr;
+    ImFont* _fontOverlayEurostile = nullptr;
+#endif
 
     bool _showAddCommander = false;
     bool _showEditButtons = false;

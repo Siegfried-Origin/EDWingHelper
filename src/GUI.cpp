@@ -23,66 +23,122 @@ GUI::GUI(
     );
 
     ImGui::SetCurrentContext(_mainWindow->getImGuiContext());
+    {
+        ImGuiIO& io = ImGui::GetIO();
+        ImGuiStyle& style = ImGui::GetStyle();
 
-    ImGuiIO& io = ImGui::GetIO();
-    ImGuiStyle& style = ImGui::GetStyle();
+        float fontSize = style.FontScaleDpi * 22.f;
+        float iconFontSize = 0.8 * fontSize;//style.FontScaleDpi * 24.f;
 
-    float fontSize = style.FontScaleDpi * 22.f;
-    float iconFontSize = 0.8 * fontSize;//style.FontScaleDpi * 24.f;
+        // Add icon glyphs
+        ImFontConfig cfgIcons;
+        cfgIcons.MergeMode = true;
+        cfgIcons.PixelSnapH = true;
+        cfgIcons.GlyphMinAdvanceX = fontSize;
+        cfgIcons.GlyphOffset.y = iconFontSize / 6.f;
 
-    // Add icon glyphs
-    ImFontConfig cfgIcons;
-    cfgIcons.MergeMode = true;
-    cfgIcons.PixelSnapH = true;
-    cfgIcons.GlyphMinAdvanceX = fontSize;
-    cfgIcons.GlyphOffset.y = iconFontSize / 6.f;
+        io.Fonts->AddFontFromMemoryCompressedTTF(
+            Icons_compressed_data,
+            Icons_compressed_size,
+            iconFontSize,
+            &cfgIcons
+        );
 
-    io.Fonts->AddFontFromMemoryCompressedTTF(
-        Icons_compressed_data,
-        Icons_compressed_size,
-        iconFontSize,
-        &cfgIcons
+        // Eurocaps
+        float eurocapsFontSize = style.FontScaleDpi * 26.f;
+
+        _fontMainWindowEurocaps = io.Fonts->AddFontFromMemoryCompressedTTF(
+            EUROCAPS_compressed_data,
+            EUROCAPS_compressed_size,
+            eurocapsFontSize
+        );
+
+        io.Fonts->AddFontFromMemoryCompressedTTF(
+            Icons_compressed_data,
+            Icons_compressed_size,
+            iconFontSize,
+            &cfgIcons
+        );
+
+        // Eurostile
+        _fontMainWindowEurostile = io.Fonts->AddFontFromMemoryCompressedTTF(
+            Eurostile_compressed_data,
+            Eurostile_compressed_size,
+            fontSize
+        );
+
+        io.Fonts->AddFontFromMemoryCompressedTTF(
+            Icons_compressed_data,
+            Icons_compressed_size,
+            iconFontSize,
+            &cfgIcons
+        );
+    }
+
+#ifdef BUILD_OVERLAY
+    _overlayWindow = new WindowOverlay(
+        _pWindowSystem,
+        "ED Wing Helper overlay",
+        config / "overlay.ini",
+        L"EliteDangerous64.exe"
+        //L"notepad.exe"
     );
 
-    // Eurocaps
-    float eurocapsFontSize = style.FontScaleDpi * 26.f;
+    ImGui::SetCurrentContext(_overlayWindow->getImGuiContext());
+    {
+        ImGuiIO& io = ImGui::GetIO();
+        ImGuiStyle& style = ImGui::GetStyle();
 
-    _fontEurocaps = io.Fonts->AddFontFromMemoryCompressedTTF(
-        EUROCAPS_compressed_data,
-        EUROCAPS_compressed_size,
-        eurocapsFontSize
-    );
+        float fontSize = style.FontScaleDpi * 22.f;
+        float iconFontSize = 0.8 * fontSize;//style.FontScaleDpi * 24.f;
 
-    io.Fonts->AddFontFromMemoryCompressedTTF(
-        Icons_compressed_data,
-        Icons_compressed_size,
-        iconFontSize,
-        &cfgIcons
-    );
+        // Add icon glyphs
+        ImFontConfig cfgIcons;
+        cfgIcons.MergeMode = true;
+        cfgIcons.PixelSnapH = true;
+        cfgIcons.GlyphMinAdvanceX = fontSize;
+        cfgIcons.GlyphOffset.y = iconFontSize / 6.f;
 
-    // Eurostile
-    _fontEurostile = io.Fonts->AddFontFromMemoryCompressedTTF(
-        Eurostile_compressed_data,
-        Eurostile_compressed_size,
-        fontSize
-    );
+        io.Fonts->AddFontFromMemoryCompressedTTF(
+            Icons_compressed_data,
+            Icons_compressed_size,
+            iconFontSize,
+            &cfgIcons
+        );
 
-    io.Fonts->AddFontFromMemoryCompressedTTF(
-        Icons_compressed_data,
-        Icons_compressed_size,
-        iconFontSize,
-        &cfgIcons
-    );
+        // Eurocaps
+        float eurocapsFontSize = style.FontScaleDpi * 26.f;
 
-    //_overlayWindow = new WindowOverlay(
-    //    _pWindowSystem,
-    //    "ED Wing Helper overlay",
-    //    config / "overlay.ini",
-    //    L"EliteDangerous64.exe"
-    //    //L"notepad.exe"
-    //);
+        _fontOverlayEurocaps = io.Fonts->AddFontFromMemoryCompressedTTF(
+            EUROCAPS_compressed_data,
+            EUROCAPS_compressed_size,
+            eurocapsFontSize
+        );
 
-    //_overlayWindow->setShown(false);
+        io.Fonts->AddFontFromMemoryCompressedTTF(
+            Icons_compressed_data,
+            Icons_compressed_size,
+            iconFontSize,
+            &cfgIcons
+        );
+
+        // Eurostile
+        _fontOverlayEurostile = io.Fonts->AddFontFromMemoryCompressedTTF(
+            Eurostile_compressed_data,
+            Eurostile_compressed_size,
+            fontSize
+        );
+
+        io.Fonts->AddFontFromMemoryCompressedTTF(
+            Icons_compressed_data,
+            Icons_compressed_size,
+            iconFontSize,
+            &cfgIcons
+        );
+    }
+
+    _overlayWindow->setShown(true);
+#endif // BUILD_OVERLAY
 }
 
 
@@ -90,12 +146,14 @@ GUI::~GUI()
 {
     delete _mainWindow;
 
+#ifdef BUILD_OVERLAY
     if (_overlayWindow) {
         _overlayWindow->closeWindow();
         // TODO: must be solved, it seems the join blocks
         // the delete
         //delete _overlayWindow;
     }
+#endif
 }
 
 
@@ -116,11 +174,13 @@ void GUI::run()
 
         lastTime = now;
 
+#ifdef BUILD_OVERLAY
         if (_overlayWindow && _overlayWindow->active()) {
             _overlayWindow->beginFrame();
-            ImGui::ShowDemoWindow();
+            showOverlayContent();
             _overlayWindow->endFrame();
         }
+#endif // BUILD_OVERLAY
 
         // Force confirmation in case commander were winged:
         // we cannot recover this list after closing
@@ -136,40 +196,71 @@ void GUI::run()
             _mainWindow->beginFrame();
 
             beginMainWindow();
-            ImGui::PushFont(_fontEurostile);
-
-            menuBar();
-
-            if (_app.getCmdrList().size() == 0) {
-                const char* importListText = ICON_MD_FOLDER_OPEN " Import List...";
-
-                ImVec2 size = ImGui::CalcTextSize(importListText);
-                float buttonWidth = size.x + ImGui::GetStyle().FramePadding.x * 2.0f;
-                float buttonHeight = size.y + ImGui::GetStyle().FramePadding.y * 2.0f;
-
-                ImVec2 avail = ImGui::GetContentRegionAvail();
-
-                ImGui::SetCursorPosX((avail.x - buttonWidth) * 0.5f);
-                ImGui::SetCursorPosY((avail.y - buttonHeight) * 0.5f);
-
-                if (ImGui::Button(importListText)) {
-                    openNewCommanderListDialog();
-                }
-            }
-            else {
-                showCommanderLists();
-            }
-
-            showConfirmationMessages();
-
-            ImGui::PopFont();
-
+            showMainWindowContent();
             endMainWindow();
 
             _mainWindow->endFrame();
         }
     }
 }
+
+
+void GUI::showMainWindowContent()
+{
+    ImGui::PushFont(_fontMainWindowEurostile);
+
+    menuBar();
+
+    if (_app.getCmdrList().size() == 0) {
+        const char* importListText = ICON_MD_FOLDER_OPEN " Import List...";
+
+        ImVec2 size = ImGui::CalcTextSize(importListText);
+        float buttonWidth = size.x + ImGui::GetStyle().FramePadding.x * 2.0f;
+        float buttonHeight = size.y + ImGui::GetStyle().FramePadding.y * 2.0f;
+
+        ImVec2 avail = ImGui::GetContentRegionAvail();
+
+        ImGui::SetCursorPosX((avail.x - buttonWidth) * 0.5f);
+        ImGui::SetCursorPosY((avail.y - buttonHeight) * 0.5f);
+
+        if (ImGui::Button(importListText)) {
+            openNewCommanderListDialog();
+        }
+    }
+    else {
+        showCommanderLists(_fontMainWindowEurocaps);
+    }
+
+    showConfirmationMessages();
+
+    ImGui::PopFont();
+}
+
+
+#ifdef BUILD_OVERLAY
+void GUI::showOverlayContent()
+{
+    const float alpha = _overlayWindow->focused() ? 0.9f : 0.3f;
+
+    ImGui::PushStyleColor(
+        ImGuiCol_WindowBg,
+        ImVec4(0.07f, 0.07f, 0.07f, alpha)
+    );
+
+    if (_app.getCmdrList().size() > 0) {
+        ImGui::PushFont(_fontOverlayEurostile);
+
+        ImGui::SetWindowSize(ImVec2(300.f, 200.f), ImGuiCond_FirstUseEver);
+        ImGui::Begin("ED Wing Helper");
+        showCommanderLists(_fontOverlayEurocaps);
+        ImGui::End();
+
+        ImGui::PopFont();
+    }
+
+    ImGui::PopStyleColor();
+}
+#endif
 
 
 void GUI::beginMainWindow()
@@ -328,7 +419,7 @@ void GUI::menuBar()
 }
 
 
-void GUI::showCommanderLists()
+void GUI::showCommanderLists(ImFont* font)
 {
     static ImGuiTableFlags flags = ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_RowBg | ImGuiTableFlags_BordersOuter;
 
@@ -348,8 +439,8 @@ void GUI::showCommanderLists()
     ImGui::Text("Need invite (%d)", totalNeedInvite);
     ImGui::Separator();
 
-    displayToInviteList("Online", _app.getCmdrNeedInviteOnline(), rowOnline);
-    displayToInviteList("Offline", _app.getCmdrNeedInviteOffline(), rowOffline);
+    showToInviteList("Online", _app.getCmdrNeedInviteOnline(), rowOnline, font);
+    showToInviteList("Offline", _app.getCmdrNeedInviteOffline(), rowOffline, font);
 
     ImGui::EndChild();
 
@@ -364,17 +455,18 @@ void GUI::showCommanderLists()
     ImGui::Text("Instanced (%d)", totalInvited);
     ImGui::Separator();
 
-    displayInstancedList("Confirmed", _app.getCmdrInvitedConfirmed(), rowInvitedConfirmed);
-    displayInstancedList("Unconfirmed", _app.getCmdrInvitedUnconfirmed(), rowInvitedUnconfirmed);
+    showInstancedList("Confirmed", _app.getCmdrInvitedConfirmed(), rowInvitedConfirmed, font);
+    showInstancedList("Unconfirmed", _app.getCmdrInvitedUnconfirmed(), rowInvitedUnconfirmed, font);
 
     ImGui::EndChild();
 }
 
 
-void GUI::displayToInviteList(
+void GUI::showToInviteList(
     const char* title_name,
     const std::vector<std::string>& list,
-    const ImU32& bgColor)
+    const ImU32& bgColor,
+    ImFont* font)
 {
     static ImGuiTableFlags flags = ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_RowBg | ImGuiTableFlags_BordersOuter;
 
@@ -387,7 +479,7 @@ void GUI::displayToInviteList(
 
         uint32_t uid = 0;
 
-        ImGui::PushFont(_fontEurocaps);
+        ImGui::PushFont(font);
 
         for (const std::string& cmdr : list) {
             // Ensures height stay consistent regardless if edit buttons are displayed
@@ -416,7 +508,7 @@ void GUI::displayToInviteList(
                 if (ImGui::IsItemHovered()) {
                     ImGui::PopFont();
                     ImGui::SetTooltip("Remove from list");
-                    ImGui::PushFont(_fontEurocaps);
+                    ImGui::PushFont(font);
                 }
 
                 ImGui::PopStyleColor(3);
@@ -430,7 +522,7 @@ void GUI::displayToInviteList(
                 if (ImGui::IsItemHovered()) {
                     ImGui::PopFont();
                     ImGui::SetTooltip("Manualy move to the invited list");
-                    ImGui::PushFont(_fontEurocaps);
+                    ImGui::PushFont(font);
                 }
 
                 ImGui::PopID();
@@ -444,10 +536,11 @@ void GUI::displayToInviteList(
 }
 
 
-void GUI::displayInstancedList(
+void GUI::showInstancedList(
     const char* title_name,
     const std::vector<std::string>& list,
-    const ImU32& bgColor)
+    const ImU32& bgColor,
+    ImFont* font)
 {
     static ImGuiTableFlags flags = ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_RowBg | ImGuiTableFlags_BordersOuter;
     if (ImGui::BeginTable(title_name, 2, flags)) {
@@ -460,7 +553,7 @@ void GUI::displayInstancedList(
         uint32_t uid = 0;
         const std::vector<std::string>& cmdrInvited = list;
 
-        ImGui::PushFont(_fontEurocaps);
+        ImGui::PushFont(font);
 
         for (const std::string& cmdr : cmdrInvited) {
             // Ensures height stay consistent regardless if edit buttons are displayed
@@ -481,7 +574,7 @@ void GUI::displayInstancedList(
                 if (ImGui::IsItemHovered()) {
                     ImGui::PopFont();
                     ImGui::SetTooltip("Manualy remove from the invited list");
-                    ImGui::PushFont(_fontEurocaps);
+                    ImGui::PushFont(font);
                 }
 
                 ImGui::SameLine();
@@ -497,7 +590,7 @@ void GUI::displayInstancedList(
                 if (ImGui::IsItemHovered()) {
                     ImGui::PopFont();
                     ImGui::SetTooltip("Remove from list");
-                    ImGui::PushFont(_fontEurocaps);
+                    ImGui::PushFont(font);
                 }
 
                 ImGui::PopStyleColor(3);
@@ -594,7 +687,7 @@ void GUI::showConfirmationMessages()
             ImGui::Text("Commander name:");
             ImGui::SameLine();
 
-            ImGui::PushFont(_fontEurocaps);
+            ImGui::PushFont(_fontMainWindowEurocaps);
 
             // TODO: use a callback to show completion from known commanders in
             //       online friend list.
