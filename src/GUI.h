@@ -4,7 +4,10 @@
 
 #include <Window/WindowSystem.h>
 #include <Window/WindowBorderless.h>
+
+#ifndef BUILD_OVERLAY
 #include <Window/WindowOverlay.h>
+#endif
 
 #include <filesystem>
 
