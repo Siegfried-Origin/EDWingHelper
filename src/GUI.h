@@ -1,6 +1,7 @@
 #pragma once
 
 #include "App.h"
+#include "Settings.h"
 
 #include <Window/WindowSystem.h>
 #include <Window/WindowBorderless.h>
@@ -15,7 +16,7 @@ class GUI
 {
 public:
     GUI(
-        const std::filesystem::path& config,
+        const Settings& appSettings,
         WindowSystem* pWindowSystem
     );
 

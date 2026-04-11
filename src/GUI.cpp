@@ -12,16 +12,16 @@
 
 
 GUI::GUI(
-    const std::filesystem::path& config,
+    const Settings& appSettings,
     WindowSystem* pWindowSystem)
     : _pWindowSystem(pWindowSystem)
 {
-	_app.monitorUserProfile(EliteFileUtil::getUserProfile());
+    _app.monitorUserProfile(appSettings.playerProfileDirectory());
 
     _mainWindow = new WindowBorderless(
         _pWindowSystem,
         "ED Wing Helper",
-        config / "mainwindow.ini",
+		appSettings.mainWindowConfigFile(),
         1024, 768
     );
 
@@ -82,7 +82,7 @@ GUI::GUI(
     _overlayWindow = new WindowOverlay(
         _pWindowSystem,
         "ED Wing Helper overlay",
-        config / "overlay.ini",
+		appSettings.overlayWindowConfigFile(),
         L"EliteDangerous64.exe"
         //L"notepad.exe"
     );
