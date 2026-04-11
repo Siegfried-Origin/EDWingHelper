@@ -7,7 +7,9 @@
 
 
 JournalWatcher::JournalWatcher()
-{}
+{
+    _stopWatcherThread = CreateEvent(nullptr, TRUE, FALSE, nullptr);
+}
 
 
 JournalWatcher::~JournalWatcher()
@@ -20,14 +22,16 @@ JournalWatcher::~JournalWatcher()
 
 #ifdef _WIN32
     SetEvent(_stopWatcherThread);
-    _watcherThread.join();
-    CloseHandle(_stopWatcherThread);
 #else
     _stopWatcherThread = true;
+#endif
 
     if (_watcherThread.joinable()) {
         _watcherThread.join();
     }
+
+#ifdef _WIN32
+    CloseHandle(_stopWatcherThread);
 #endif
 }
 
@@ -70,7 +74,6 @@ void JournalWatcher::start(const std::filesystem::path& userProfile)
     _forcedUpdateThread = std::thread(&JournalWatcher::forcedUpdate, this);
 
 #ifdef _WIN32
-    _stopWatcherThread = CreateEvent(nullptr, TRUE, FALSE, nullptr);
     _watcherThread = std::thread(&JournalWatcher::fileWatcherThread, this, userProfile, _stopWatcherThread);
 #else
     _stopWatcherThread = false;
