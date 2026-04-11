@@ -7,14 +7,6 @@
 #include <map>
 #include <string>
 
-#ifdef _WIN32
-#  include <windows.h>
-#else
-#  include <sys/inotify.h>
-#  include <unistd.h>
-#  include <limits.h>
-#endif
-
 
 class App : public JournalListener
 {
@@ -32,11 +24,10 @@ public:
         bool manualyMovedToWing = false;
     };
 
-
-
-    App(const std::filesystem::path& config);
-
+    App();
     ~App();
+
+	void monitorUserProfile(const std::filesystem::path& userProfile);
 
     void loadCommanderList(const std::filesystem::path& pathList);
     void appendCommanderList(const std::filesystem::path& pathList);
@@ -71,12 +62,6 @@ private:
 
     void toCmdrName(std::string& s);
 
-#ifdef _WIN32
-    void fileWatcherThread(HANDLE hStop);
-#else
-    void fileWatcherThread();
-#endif
-
 private:
     std::map<std::string, Status> _cmdrList;
 
@@ -86,13 +71,6 @@ private:
     std::map<std::string, bool> _friendsOnlineTracker;
 
     JournalWatcher _journalWatcher;
-    std::thread _watcherThread;
 
     bool _wasEdited = false;
-
-#ifdef _WIN32
-    HANDLE _hStop;
-#else
-    bool _hStop = false;
-#endif
 };

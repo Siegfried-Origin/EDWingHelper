@@ -5,6 +5,8 @@
 #include "fonts/icons.h"
 #include "fonts/IconsMaterialDesign.h"
 
+#include "util/EliteFileUtil.h"
+
 #include <algorithm>
 #include <cstring>
 
@@ -12,9 +14,10 @@
 GUI::GUI(
     const std::filesystem::path& config,
     WindowSystem* pWindowSystem)
-    : _app(config)
-    , _pWindowSystem(pWindowSystem)
+    : _pWindowSystem(pWindowSystem)
 {
+	_app.monitorUserProfile(EliteFileUtil::getUserProfile());
+
     _mainWindow = new WindowBorderless(
         _pWindowSystem,
         "ED Wing Helper",
