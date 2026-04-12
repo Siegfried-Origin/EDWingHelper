@@ -5,8 +5,6 @@
 #include "fonts/icons.h"
 #include "fonts/IconsMaterialDesign.h"
 
-#include "util/EliteFileUtil.h"
-
 #include <algorithm>
 #include <cstring>
 
